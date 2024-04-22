@@ -1,0 +1,4 @@
+$Domain = ""
+$Context = ""
+$ClientId = ""
+$ClientSecret = ""
