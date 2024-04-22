@@ -1,0 +1,4295 @@
+openapi: 3.0.0
+info:
+  version: 1.22.0
+  title: Destiny API -- Self-Service
+servers:
+  - url: '/api/v{apiVersion}/rest/context/{contextName}'
+    variables: 
+      apiVersion: 
+        default: '1'
+        description: Major version
+      contextName: 
+        default: destiny
+        description: >-
+          This identifies which Destiny district needs to be accessed.  If the
+          Destiny server being accessed does not host multiple districts, the
+          value for this can be set to "destiny"
+  - url: '/api/v{apiVersion}/rest'
+    variables: 
+      apiVersion: 
+        default: '1'
+        description: Major version of the API being used
+
+paths:
+  '/sites/{siteId}/self/{principalId}/materials/carousels':
+    get:
+      summary: Obtains the list of carousels enabled for the site
+      description: >-
+        Use this API to get a list of the carousels enabled at the site.
+      operationId: getCarousels
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve carousels. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoverCarouselsCollection'
+              example:
+                carousels:
+                  - carouselIdentifier: 'CUSTOM_CAROUSEL'
+                    carouselName: 'October Surprises'
+                    position: 0
+                  - carouselIdentifier: 'TOPICS'
+                    carouselName: 'Pillar Demo'
+                    position: 1
+                  - carouselIdentifier: 'EBOOKS'
+                    carouselName: 'eBooks'
+                    position: 2
+                  - carouselIdentifier: 'AUDIOBOOKS'
+                    carouselName: 'Audiobooks'
+                    position: 3  
+                  
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/materials/titles':
+    get:
+      summary: Obtains library titles
+      description: >-
+        Use this API to search a specific school's library collection and return titles that the user can see. Results are paged. Order is based on relevance.
+      operationId: getTitlesICanSee
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve library titles. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+        - name: '$search'
+          in: query
+          description: >-
+            The query as entered by the user into the search box.
+          required: false
+          schema:
+            type: string 
+        - name: '$top'
+          in: query
+          description: >-
+            Number of records to return. Default value is 25.
+          required: false
+          schema:
+            type: integer 
+        - name: '$skip' 
+          in: query
+          description: >-
+            Number of records to skip. Default value is 0.
+          required: false
+          schema:
+            type: integer 
+        - name: '$count' 
+          in: query
+          description: >-
+            This flag instructs the API to return the number of results instead of the actual results.
+            This changes the content-type header to text/plain and returns a simple integer as a response.
+            Paging parameters are ignored in this case.  This defaults to false.
+          required: false
+          schema:
+            type: boolean
+        - name: includeReviewRating 
+          in: query
+          description: >-
+            When true, this will include additional information about ratings for the title. This defaults to false.
+          required: false
+          schema:
+            type: boolean
+        - name: includeAvailability 
+          in: query
+          description: >-
+            When true, this will include additional information about availability for the title. This defaults to false.
+          required: false
+          schema:
+            type: boolean
+        - name: includeAllowedActions 
+          in: query
+          description: >-
+            When true, this will include a list of allowed actions that can be performed on the material by the user. This defaults to false.
+          required: false
+          schema:
+            type: boolean 
+        - name: materialType
+          in: query
+          description: >-
+            If included, the search will limit results to those matching the specified material type.
+          required: false
+          schema:
+            type: string
+            enum: 
+              - ALL_MATERIAL_TYPES
+              - ALL_AUDIO_BOOKS
+              - ALL_EBOOKS
+              - BOOK
+              - COMPUTER_FILE
+              - EQUIPMENT
+              - FILM
+              - FOLLETT_AUDIO_BOOK
+              - FOLLETT_EBOOK
+              - GRAPHIC
+              - INTERACTIVE_BOOK
+              - KIT
+              - LANGUAGE
+              - LIGHTBOX
+              - MAP
+              - MIXED
+              - MUSIC
+              - MUSICAL_RECORDING
+              - NON_MUSICAL_RECORDING
+              - OBJECT
+              - SERIAL
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TitlesCollection'
+              example:
+                value:
+                  - id: 224
+                    collectionType: 'library'
+                    title: 'The Red Barn'
+                    author: 'Doe, John'    
+                    isbns: 
+                      - '978-3-16-148410-0'
+                    callNumber: 'FIC 123'
+                    materialType: 'FOLLETT_EBOOK'
+                    sublocation: 'fictional shelf'
+                    ratingInformation:
+                      average: 3.4
+                      count: 9
+                    availability:
+                      status: 'IN'
+                      totalCount: 3
+                      availableLocal: 3
+                    allowedActions: 
+                      - 'CHECK_OUT'
+                durationMillis: 253
+                '@nextLink': '/sites/123/self/584f4524-f3e1-4d07-9c1b-a5e5101b22c2/materials/titles?search=dogs&top=25&skip=150'
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SKIP_INVALID
+                  message: 'Skip must be an integer value'
+                  target: skip
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/materials/recentlyadded':
+    get:
+      summary: Obtains the most recently added books
+      description: >-
+        Use this API to get a list of the most recently added books at the specific school's library. This list only includes the 15 most recent materials with the BOOK material type. Order is based on the most recent copy created date.
+      operationId: getRecentlyAdded
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve library titles. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TitlesCollection'
+              example:
+                value:
+                  - id: 224
+                    collectionType: 'library'
+                    title: 'The Red Barn'
+                    author: 'Doe, John'    
+                    isbns: 
+                      - '978-3-16-148410-0'
+                    callNumber: 'FIC 123'
+                    materialType: 'BOOK'
+                    sublocation: 'fictional shelf'
+                    ratingInformation:
+                      average: 3.4
+                      count: 9
+                    availability:
+                      status: 'IN'
+                      totalCount: 3
+                      availableLocal: 3
+                    allowedActions: 
+                      - 'HOLD'
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/auth/grants':
+    get:
+      summary: Obtains auth grants
+      description: >-
+        Use this API to get user permissions, scopes, IMSRole and persona.
+      operationId: getAuthGrants
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which where the user is current. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatronAuthGrantsVO'
+              example:
+                value:
+                  - patronType: 
+                      id: 2134
+                      name: 'Student'
+                    role:
+                      id: 1578
+                      name: 'Administrator'
+                      sessionTimeoutMillis: 60000
+                    permissions: 
+                      - 'AddTitles,EditTitles,DeleteTitles'
+                    scopes:
+                      - 'LIBRARY_ACCESS,RESOURCE_ACCESS'
+                    imsRole: 'MENTOR'
+                    persona: 'STUDENT'
+                durationMillis: 253
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SKIP_INVALID
+                  message: 'Skip must be an integer value'
+                  target: skip
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'  
+  '/sites/{siteId}/self/{principalId}/sites':
+    get:
+      summary: Obtains user site information
+      description: >-
+        Use this API to get list of sites from user's perspective.
+      operationId: getSites
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which where the user is current. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatronSitesSelfVO'
+              example:
+                district:
+                  name: "McHenry School District"
+                  guid: "C1AE3F60-AA14-4E63-B257-A3ACAD2175C7"
+                value:
+                  - GUID: '507a74f7-1025-4141-b2fb-4d06b6bc43ee'
+                    siteName: 'Lincoln Elementary School'
+                    siteType:
+                      id: 1245
+                      name: 'Elementary Schools'
+                      priorityOrder: 1
+                    librarySite : true
+                    mediaSite : false
+                    resourceSite : false
+                    districtWarehouse : false
+                    districtAdvancedBooking: false
+                    enrolled: true
+                    primarySite: false
+                    guestAllowed: true
+                  - GUID: '2A661344-DA75-4984-A295-97A0B96E5C47'
+                    siteName: 'Washington High School'
+                    siteType:
+                      id: 54321
+                      name: 'High Schools'
+                      priorityOrder: 2
+                    librarySite : true
+                    mediaSite : false
+                    resourceSite : true
+                    districtWarehouse : false
+                    districtAdvancedBooking: false
+                    enrolled: true
+                    primarySite: true
+                    guestAllowed: true                    
+                durationMillis: 253
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SKIP_INVALID
+                  message: 'Skip must be an integer value'
+                  target: skip
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'                  
+  '/sites/{siteId}/self/{principalId}/materials/searches':
+    post:
+      summary: Obtains library titles.
+      description: >-
+        Use this API to search a specific school's library collection and return titles that the user can see. Results are paged. Order is based on relevance. 
+      operationId: performLibraryMaterialsSearch
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve library titles. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: 'Contains the search term, options, and limiters necessary to perform the search.'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+            example:
+              $search: "dogs"
+              $top: 25
+              $skip: 50
+              includeReviewRating: "false"
+              includeAvailability: "true"
+              includeAllowedActions: "true"
+              materialType: "ALL_EBOOKS"
+              availability: "ALL_AVAILABLE"
+              searchType: "TITLE"
+              sublocationIDs:
+                - 1234
+                - 4567
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TitlesCollection'
+              example:
+                value:
+                  - id: 224
+                    collectionType: 'library'
+                    title: 'The Red Barn'
+                    author: 'Doe, John'    
+                    isbns: 
+                      - '978-3-16-148410-0'
+                    callNumber: 'FIC 123'
+                    materialType: 'FOLLETT_EBOOK'
+                    sublocation: 'fictional shelf'
+                    ratingInformation:
+                      average: 3.4
+                      count: 9
+                    availability:
+                      status: 'IN'
+                      totalCount: 3
+                      availableLocal: 3
+                    allowedActions: 
+                      - 'CHECK_OUT'
+                durationMillis: 253
+                hasAdditionalResults: true
+                nextSkipValue: 25
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_BAD_REQUEST
+                  message: 'Count parameter cannot be set to true when also setting the availability filter.'
+                  target: count
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/materials/titles/{recordId}':
+    get:
+      summary: Obtains details about a specific library title
+      description: >-
+        Use this API to obtain details about a specific title in a school's library collection that the user can see.
+      operationId: getDetailsOfATitleICanSee
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve library titles. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+        - name: recordId
+          in: path
+          description: >-
+            The identifier of the library material title to get details for.
+          required: true
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TitleDetails'
+              example:
+                value:
+                  - id: 224
+                    collectionType: 'library'
+                    title: 'Red eyes or blue feathers'
+                    responsiblity: 'by Patricia M. Stockland ; illustrated by Todd Ouren.'    
+                    isbns: 
+                      - '978-3-16-148410-0'
+                    callNumber: 'FIC 123'
+                    shortDescription: 'An exciting tale, to be sure.'
+                    materialType: 'FOLLETT_EBOOK'
+                    sublocation: 'fictional shelf'
+                    acceleratedReader:
+                      quizNumber: 'abc'
+                      points: 0.5
+                      readingLevel: 1.3
+                      interestLevel: 'MG+'
+                    readingCounts:
+                      points: 1.0
+                      readingLevel: 2.0
+                    lexile: 'AD490L'
+                    fountasAndPinnell: 'J'
+                    ratingInformation:
+                      average: 3.4
+                      count: 9
+                    availability:
+                      status: 'IN'
+                      totalCount: 10
+                      availableLocal: 5
+                    allowedActions: 
+                      - 'READ'
+                      - 'RETURN'
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_RECORD_IDENTIFIER_INVALID
+                  message: 'Record identifier must be an integer value'
+                  target: recordId
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing, site identifier and record identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_MATERIAL_NOT_FOUND
+                  message: 'Material (6000) could not be found'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Some error in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/materials/titles/batch':
+    post:
+      summary: Obtains a batch of library title details.
+      description: >-
+        Use this API to obtain details about specific titles in a school's library collection that the user can see.
+      operationId: getLibraryMaterialsByIds
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve library titles. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+      requestBody:
+        description: 'Contains a list of bibIds to search for.'
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: number
+            example:
+              bookIds: [123, 456, 789]
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TitlesBaseCollectionVO'
+              example:
+                titles:
+                  - id: 224
+                    collectionType: 'library'
+                    title: 'Red eyes or blue feathers'
+                    author: 'Patricia M. Stockland'    
+                    isbns: 
+                      - '978-3-16-148410-0'
+                    callNumber: 'FIC 123'
+                    materialType: 'FOLLETT_EBOOK'
+                    availability:
+                      status: 'IN'
+                      totalCount: 10
+                      availableLocal: 5
+                    allowedActions: 
+                      - 'READ'
+                      - 'RETURN'
+                    materialExists: true
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_RECORD_IDENTIFIER_INVALID
+                  message: 'Record identifier must be an integer value'
+                  target: recordId
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: MaterialsByIds
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing, site identifier and record identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_MATERIAL_NOT_FOUND
+                  message: 'Material (6000) could not be found'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Some error in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/electronicresource/{id}':
+    get:
+      summary: Obtains the electronic resource for the given material
+      description: >-
+        Use this API to obtain the electronic resource url for the given material whenever a user performs the "Open" action on that material. The material is usually an ebook or audiobook with an electronic resource or 856 tag, but not a "Follett eBook" or "Follett Audiobook" as these materials use a different method for reading or playing the material.
+      operationId: getElectronicResource
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which the given material resides. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+        - name: 'id'
+          in: path
+          description: >-
+            The id of the material that user wishes to open.
+          required: true
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ElectronicResourceVO'
+              example:
+                url: 'https://somebooksite.com?id=F548X7HK7HK87'
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_BAD_REQUEST
+                  message: '123 is not a valid item identifier.'
+                  target: id
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/ebookreaderinfo':
+    get:
+      summary: Obtains info needed to open an ebook
+      description: >-
+        Use this API to get the canonical ISBN, flrCustomerNumber, and other info needed to open an ebook in the reader.  This version of the call will obtain a read_online checkout if the book is not already checked out, and will also mark the book as recently read.  This version of the call is meant to be used when you are going to immediately proceed to read the book.  If you wish to obtain the information associated with this call without these side effects, use the /ebookreaderinforeadonly version of the call.
+      operationId: getEBookReaderInfo
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve library titles. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+        - name: 'id'
+          in: query
+          description: >-
+            The id of the material to get info for.
+          required: true
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinyEBookReaderInfoVO'
+              example:
+                id: 224
+                flrCustomerNumber: '1234567'
+                isbn: '0123456789012'
+                bookVaultTransToken: 'TRANS_TOKEN'    
+                userGuid: 'USER_GUID'
+                userName: 'johndoe'
+                readerCheckoutType: 'READ_ONLINE'
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_BAD_REQUEST
+                  message: '123 is not a valid item identifier.'
+                  target: id
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/ebookreaderinforeadonly':
+    get:
+      summary: Obtains info needed to open an ebook
+      description: >-
+        Use this API to get the canonical ISBN, flrCustomerNumber, and other info needed to open an ebook in the reader.  This version of the call will NOT do a read_online checkout of the book if it is not checked out.  It will also not mark the book as recently read.  This call is useful for when you are not planning to immediately read the book, but still need this info.
+      operationId: getEBookReaderInfoReadOnly
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve library titles. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+        - name: 'id'
+          in: query
+          description: >-
+            The id of the material to get info for.
+          required: true
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinyEBookReaderInfoVO'
+              example:
+                id: 224
+                flrCustomerNumber: '1234567'
+                isbn: '0123456789012'
+                bookVaultTransToken: 'TRANS_TOKEN'    
+                userGuid: 'USER_GUID'
+                userName: 'johndoe'
+                readerCheckoutType: 'READ_ONLINE'
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_BAD_REQUEST
+                  message: '123 is not a valid item identifier.'
+                  target: id
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/ebookreaderinforeadonly/ktsid/{ktsId}':
+    get:
+      summary: Obtains info needed to open an ebook by ktsId
+      description: >-
+        Use this API to get the canonical ISBN, flrCustomerNumber, and other info needed to open an ebook in the reader.  This version of the call will NOT do a read_online checkout of the book if it is not checked out.  It will also not mark the book as recently read.  This call is useful for when you are not planning to immediately read the book, but still need this info.  This call is useful when you do not have a bibId but you do have a ktsId, for example when opening a class set material.
+      operationId: getEBookReaderInfoReadOnlyByKtsId
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve library titles. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+        - name: 'ktsId'
+          in: path
+          description: >-
+            The ktsId of the material to get info for.
+          required: true
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinyEBookReaderInfoVO'
+              example:
+                id: 224
+                flrCustomerNumber: '1234567'
+                isbn: '0123456789012'
+                bookVaultTransToken: 'TRANS_TOKEN'    
+                userGuid: 'USER_GUID'
+                userName: 'johndoe'
+                readerCheckoutType: 'READ_ONLINE'
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_BAD_REQUEST
+                  message: '123 is not a valid item identifier.'
+                  target: id
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/audiobookreaderinfo':
+    get:
+      summary: Obtains info needed to open an audiobook
+      description: >-
+        Use this API to get the canonical ISBN, flrCustomerNumber, and other info needed to open an audiobook in the reader.  This call will perform a play_online checkout if the audiobook is not already checked out, and will also mark the book as recently read.  This call is intended to be used when you are planning to immediately proceed to read the audiobook.  If you wish to get the info associated with this call without these side effects, use the /audiobookreaderinforeadonly endpoint instead.
+      operationId: getAudiobookReaderInfo
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve library titles. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+        - name: 'id'
+          in: query
+          description: >-
+            The id of the material to get info for.
+          required: true
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinyAudiobookReaderInfoVO'
+              example:
+                id: 224
+                title: 'The 5th Wave'
+                flrCustomerNumber: '1234567'
+                isbn: '0123456789012'
+                readerCheckoutType: 'READ_ONLINE'
+                audiobookLicenseId: '123_abc'
+                audiobookAccountId: 'ABC-123'
+                audiobookId: '1234567'
+                findawayConsumerKey: 'prod_USERGUID'
+                findawaySessionToken: 'abc_123'
+                coverImageUrl: 'http://coverimage.com/1234'
+                chapterized: true
+                chapters:  
+                          - chapterNumber: 1
+                            partNumber: 0
+                            duration: 1234
+                          - chapterNumber: 1
+                            partNumber: 1
+                            duration: 2345
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_BAD_REQUEST
+                  message: '123 is not a valid item identifier.'
+                  target: id
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/audiobookreaderinforeadonly':
+    get:
+      summary: Obtains info needed to open an audiobook
+      description: >-
+        Use this API to get the canonical ISBN, flrCustomerNumber, and other info needed to open an audiobook in the reader.  This call will not perform a play_online checkout if the audiobook is not already checked out -- it will fail instead. It will also not mark the book as recently read.  This call is useful for when you are not planning to immediately read the audiobook, but still need this info.
+      operationId: getAudiobookReaderInfoReadOnly
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve library titles. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+        - name: 'id'
+          in: query
+          description: >-
+            The id of the material to get info for.
+          required: true
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinyAudiobookReaderInfoVO'
+              example:
+                id: 224
+                title: 'The 5th Wave'
+                flrCustomerNumber: '1234567'
+                isbn: '0123456789012'
+                readerCheckoutType: 'ONLINE'
+                audiobookLicenseId: '123_abc'
+                audiobookAccountId: 'ABC-123'
+                audiobookId: '1234567'
+                findawayConsumerKey: 'prod_USERGUID'
+                findawaySessionToken: 'abc_123'
+                coverImageUrl: 'http://coverimage.com/12345'
+                chapterized: false
+                chapters: 
+                  - chapterNumber : 1
+                    partNumber: 0
+                    duration: 1234
+                  - chapterNumber : 1
+                    partNumber: 1
+                    duration: 2345
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_BAD_REQUEST
+                  message: '123 is not a valid item identifier.'
+                  target: id
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/audiobookreaderinforeadonly/ktsid/{ktsId}':
+    get:
+      summary: Obtains info needed to open an audiobook by ktsId
+      description: >-
+        Use this API to get the canonical ISBN, flrCustomerNumber, and other info needed to open an audiobook in the reader.  This call will not perform a play_online checkout if the audiobook is not already checked out -- it will fail instead. It will also not mark the book as recently read.  This call is useful for when you are not planning to immediately read the audiobook, but still need this info.  This endpoint is usefl when you do not have a bibId but you do have a ktsId, such as when opening a class set material.
+      operationId: getAudiobookReaderInfoReadOnlyByKtsId
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve library titles. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+        - name: 'ktsId'
+          in: path
+          description: >-
+            The ktsId of the material to get info for.
+          required: true
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinyAudiobookReaderInfoVO'
+              example:
+                id: 224
+                title: 'The 5th Wave'
+                flrCustomerNumber: '1234567'
+                isbn: '0123456789012'
+                readerCheckoutType: 'ONLINE'
+                audiobookLicenseId: '123_abc'
+                audiobookAccountId: 'ABC-123'
+                audiobookId: '1234567'
+                findawayConsumerKey: 'prod_USERGUID'
+                findawaySessionToken: 'abc_123'
+                coverImageUrl: 'http://coverimage.com/12345'
+                chapterized: false
+                chapters: 
+                  - chapterNumber : 1
+                    partNumber: 0
+                    duration: 1234
+                  - chapterNumber : 1
+                    partNumber: 1
+                    duration: 2345
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_BAD_REQUEST
+                  message: '123 is not a valid item identifier.'
+                  target: id
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/markrecentlyread':
+    put:
+      summary: Marks a material as recently read.
+      description: >-
+        Use this API to mark a book as read at the moment you call it.  Will cause the material to show up in the front of a recently read list.
+      operationId: markRecentlyRead
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve library titles. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+        - name: 'id'
+          in: query
+          description: >-
+            The id of the material to mark recently read.
+          required: true
+          schema:
+            type: string 
+      responses:
+        '204':
+          description: >-
+            indicates success.
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_BAD_REQUEST
+                  message: '123 is not a valid item identifier.'
+                  target: id
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/status/librarycheckouts':
+    get:
+      summary: Get a list of your own library checkouts
+      description: >-
+        Returns a list of the logged in user's library checkouts.
+      operationId: getMyLibraryCheckouts
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve library checkouts. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+      responses:
+        '200':
+          description: >-
+            The requested information was successfully obtained.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TitlesCollection'
+              example:
+                value:
+                  - id: 224
+                    collectionType: 'library'
+                    title: 'The Red Barn'
+                    author: 'Doe, John'    
+                    isbns: 
+                      - '978-3-16-148410-0'
+                    callNumber: 'FIC 123'
+                    materialType: 'FOLLETT_EBOOK'
+                    sublocation: 'fictional shelf'
+                    expires: "2020-02-27T13:27:25.0Z"
+                    ratingInformation:
+                      average: 3.4
+                      count: 9
+                    availability:
+                      status: 'IN'
+                      totalCount: 3
+                      availableLocal: 2
+                    allowedActions: 
+                      - 'RETURN'
+        '401':
+          description: 'The access token is invalid, expired, or missing.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given resources permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: CatAssetSearchAssets
+        '404':
+          description: >-
+            If patronId or siteId does not exist, return a not found status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_NOT_FOUND
+                  message: 'Could not find patron with id: ''500'''
+  '/sites/{siteId}/self/{principalId}/status/recentlyread':
+    get:
+      summary: Get a list of your own recently read ebooks and audiobooks
+      description: >-
+        Returns a list of the logged in user's recently read digital materials
+      operationId: getMyRecentlyRead
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve recently read materials. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+        - name: '$top'
+          in: query
+          description: >-
+            Number of records to return. If not specified, all records are returned.
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: >-
+            The requested information was successfully obtained.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TitlesCollection'
+              example:
+                value:
+                  - id: 224
+                    collectionType: 'library'
+                    title: 'The Red Barn'
+                    author: 'Doe, John'    
+                    isbns: 
+                      - '978-3-16-148410-0'
+                    callNumber: 'FIC 123'
+                    materialType: 'FOLLETT_EBOOK'
+                    sublocation: 'fictional shelf'
+                    expires: "2020-02-27T13:27:25.0Z"
+                    ratingInformation:
+                      average: 3.4
+                      count: 9
+                    availability:
+                      status: 'IN'
+                      totalCount: 3
+                      availableLocal: 3
+                    allowedActions: 
+                      - 'CHECK_OUT'
+        '401':
+          description: 'The access token is invalid, expired, or missing.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given resources permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: CatAssetSearchAssets
+        '404':
+          description: >-
+            If patronId or siteId does not exist, return a not found status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_NOT_FOUND
+                  message: 'Could not find patron with id: ''500'''
+  '/sites/{siteId}/self/{principalId}/status/classsetsassigned':
+    get:
+      summary: Get a list of your own assigned class sets materials.
+      description: >-
+        Returns a list of the logged in user's assigned class sets. These class sets are defined as titles assigned to patrons for a set term to use for a class. Currently, this API will only return materials with a material type of FOLLETT_EBOOK.
+      operationId: getClassSetsAssigned
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve recently read materials. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            The requested information was successfully obtained.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinyClassSetAssignmentCollectionVO'
+              example:
+                assignments:
+                  - title: 'The Little Book'
+                    author: 'Ralph Waldo Emerson'
+                    ktsid: 1234
+                    isbn: '1234567890123'
+                    materialType: 'FOLLETT_EBOOK'
+                    dueDate: '2020-02-27T13:27:25.0Z'
+                    notify: true
+                    allowedActions:
+                      - 'READ'
+                notificationCount: 1
+        '401':
+          description: 'The access token is invalid, expired, or missing.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: 'Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given resources permissions to the application and/or user.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: CatAssetSearchAssets
+        '404':
+          description: >-
+            If patronId or siteId does not exist, return a not found status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_NOT_FOUND
+                  message: 'Could not find patron with id: ''500'''
+  '/sites/{siteId}/self/{principalId}/status/libraryholds':
+    get:
+      summary: Get a list of your own library holds
+      description: >-
+        Returns a list of the logged in user's library holds.
+      operationId: getMyLibraryHolds
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve library holds. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string  
+      responses:
+        '200':
+          description: >-
+            The requested information was successfully obtained.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TitlesCollection'
+              example:
+                value:
+                  - id: 224
+                    collectionType: 'library'
+                    title: 'The Red Barn'
+                    titleSortKey: 'THE RED BARN'
+                    author: 'Doe, John'    
+                    isbns: 
+                      - '978-3-16-148410-0'
+                    callNumber: 'FIC 123'
+                    materialType: 'BOOK'
+                    sublocation: 'fictional shelf'
+                    expires: "2020-02-27T13:27:25.0Z"
+                    ratingInformation:
+                      average: 3.4
+                      count: 9
+                    holdId: 456
+                    holdStatus: 'PENDING'
+                    availability:
+                      status: 'OUT'
+                      totalCount: 3
+                      availableLocal: 0
+                    allowedActions: 
+                      - 'OPEN'
+                      - 'UNHOLD'
+                    holdQueuePosition: 2
+        '401':
+          description: 'The access token is invalid, expired, or missing.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given resources permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: CatBasicSearch
+        '404':
+          description: >-
+            If patronId or siteId does not exist, return a not found status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_NOT_FOUND
+                  message: 'Could not find patron with id: ''500'''
+  '/sites/{siteId}/self/{principalId}/checkouts':
+    post:
+      summary: Checks out a Follett electronic library material.
+      description: >-
+        Use this API to check out a Follett electronic library material for the user. The user (principal) associated with the access token will be used when checking out the material. Only a library material defined as a Follett electronic material can be checked out through this API. This material must have a KTSID assigned to it to complete the checkout. 
+      operationId: performACheckout
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site that owns the library material being checked out. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: 'The id of the material being checked out and the optional flag to indicate a play-online or read-online checkout.'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CirculationRequest'
+            example:
+              id: "224" 
+              doOnline: false
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CirculationResult'
+              example:
+                id: 224
+                title: "Catcher in the Rye"
+                expires: "2020-02-27T13:27:25.0Z"
+                allowedActions:
+                  - 'READ'
+                  - 'RETURN'
+                availability:
+                  status: 'OUT'
+                  totalCount: 1
+                  availableLocal: 0
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_CHECKOUT_CANNOT_BE_PERFORMED
+                  message: 'User already has the material checked out'
+                  target: id
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/checkins':
+    post:
+      summary: Checks in a Follett electronic library material.
+      description: >-
+        Use this API to check in a Follett electronic library material for the user. The user (principal) associated with the access token will be used when checking in the material. Only a library material defined as a Follett electronic material can be checked in through this API. This material must have a KTSID assigned to it to complete the checkin. 
+      operationId: performACheckin
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site that owns the library material being checked in. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: 'The id of the material being checked in.'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CirculationRequest'
+            example:
+              id: "224"
+              doOnline: true
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CirculationResult'
+              example:
+                id: 224
+                title: "Catcher in the Rye"
+                allowedActions:
+                  - 'CHECK_OUT'
+                availability:
+                  status: 'IN'
+                  totalCount: 1
+                  availableLocal: 1
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_CHECKIN_CANNOT_BE_PERFORMED
+                  message: 'User does not have the material checked out'
+                  target: id
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/holds/title':
+    post:
+      summary: Places a title level hold on a physical library material or a Follett ebook.
+      description: >-
+        Use this API to place a hold on a physical library material or a Follett ebook. Holds on Follett audiobooks, non-Follett ebooks and audiobooks, and non-library materials cannot be held at this time. The user (principal) associated with the access token will be used when holding the material. 
+      operationId: addTitleHold
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site that owns the library material being held. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: 'The id of the title being held.'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldRequest'
+            example:
+              id: "224"
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldResult'
+              example:
+                id: 224
+                title: "Catcher in the Rye"
+                expires: "2020-02-27T13:27:25.0Z"
+                allowedActions:
+                  - 'OPEN'
+                  - 'UNHOLD'
+                holdId: 456
+                holdStatus: 'PENDING'
+                availability:
+                  status: 'OUT'
+                  totalCount: 1
+                  availableLocal: 0
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_HOLD_CANNOT_BE_PLACED
+                  message: 'Hold cannot be placed for title ''Catcher in the Rye''. You have the maximum number of books on hold.'
+                  target: id
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: PlaceHoldForSelf
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/holds/title/{id}':
+    delete:
+      summary: Deletes a title level hold on a physical library material or a Follett ebook.
+      description: >-
+         Use this API to delete a hold on a physical library material or a Follett ebook. Holds on Follett audiobooks, non-Follett ebooks and audiobooks, and non-library materials cannot be held at this time, so the removal of such holds is also not supported. The user (principal) associated with the access token will be used when deleting the hold on the material. If this user has more than one copy held for the given title, the deletion cannot be completed and an error will be thrown.
+      operationId: deleteTitleHold
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site that owns the library material where the hold deletion is occurring. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string 
+        - name: 'id'
+          in: path
+          description: >-
+            The id of the material who's hold is to be deleted.
+          required: true
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldResult'
+              example:
+                id: 224
+                title: "Catcher in the Rye"
+                allowedActions:
+                  - 'OPEN'
+                  - 'HOLD'
+                holdId: 456
+                availability:
+                  status: 'OUT'
+                  totalCount: 1
+                  availableLocal: 0
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_HOLD_CANNOT_BE_REMOVED
+                  message: 'Hold cannot be removed for title ''Catcher in the Rye''. There are no holds on this title.'
+                  target: id
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: DeleteHoldForSelf
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/holds/{holdId}':
+    delete:
+      summary: Deletes a hold on a physical library material by the unique identifier of the hold.
+      description: >-
+         Use this API to delete a hold on a physical library material based on the given holdId of that hold. Follett ebooks holds do not have a holdId so this API does not support deleting such holds. The user (principal) associated with the access token will be used when deleting the hold on the material.
+      operationId: deleteHoldByHoldId
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site that owns the library material where the hold deletion is occurring. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string 
+        - name: 'holdId'
+          in: path
+          description: >-
+            The unique identifier of the hold to be deleted.
+          required: true
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldResult'
+              example:
+                id: 224
+                title: "Catcher in the Rye"
+                allowedActions:
+                  - 'OPEN'
+                  - 'HOLD'
+                holdId: 456
+                availability:
+                  status: 'OUT'
+                  totalCount: 1
+                  availableLocal: 0
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_HOLD_CANNOT_BE_REMOVED
+                  message: 'Hold cannot be removed because you are not at your primary site.'
+                  target: holdId
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: DeleteHoldForSelf
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/sublocations':
+    get:
+      summary: Obtains library sublocations
+      description: >-
+        Use this API for a list of sublocations defined at your currently logged in site.
+      operationId: getSublocations
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve sublocations. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SublocationCollection'
+              example:
+                sublocations:
+                  - sublocationID: 224
+                    sublocationName: 'History'
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: DeleteHoldForSelf
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/patrons':
+    get:
+      summary: Obtains library patrons
+      description: >-
+        Use this API for a list of patrons at the currently logged in site matching a given name. This API is intended to be used to find other patrons, so if the name matches the logged in user's patron record, that record will be excluded from the results.
+      operationId: getPatrons
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve patrons. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: query
+          description: >-
+            The name of the patron to match on. Will match on first, middle, and last name as well as nickname.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatronsCollection'
+              example:
+                patrons:
+                  - patronID: 224
+                    userFirstName: 'Henry'
+                    userMiddleName: 'David'
+                    userLastName: 'Thoureau'
+                    userNickname: 'Hank'
+                    userGuid: 'A345C-DEF3-12345-EAF67'
+                    userImageUrl: 'https://somedestinysite.com/api/v1/rest/context/the_district/sites/ABC3A0FF-BCA7-1234-0CB6-3C9872222XYZ/self/A345C-DEF3-12345-EAF67/patrons/image/224'
+                    patronExists: true'
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: getPatrons
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  
+  '/sites/{siteId}/self/{principalId}/patrons/batch':
+    post:
+      summary: Obtains library patrons based off a list of patronIDs or userGUIDs
+      description: >-
+        Use this API for a list of patron records given the list of patronIDs or userGUIDs. This can be used to obtain any patron record, including the logged in user's patron record, as long as that patron exists at the site specified in the path.
+      operationId: getPatronsByIDs
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve patrons. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: 'Contains a list of patronIDs or userGUIDs.'
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: number
+            example:
+              idList: [123, 456, 789]
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatronsCollection'
+              example:
+                patrons:
+                  - patronID: 224
+                    userFirstName: 'Henry'
+                    userMiddleName: 'David'
+                    userLastName: 'Thoureau'
+                    userNickname: 'Hank'
+                    userGuid: 'A345C-DEF3-12345-EAF67'
+                    userImageUrl: 'https://somedestinysite.com/api/v1/rest/context/the_district/sites/ABC3A0FF-BCA7-1234-0CB6-3C9872222XYZ/self/A345C-DEF3-12345-EAF67/patrons/image/224'
+                    patronExists: true'
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: getPatrons
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/patrons/image/{id}':
+    get:
+      summary: 'Obtains a patron''s image'
+      description: >-
+        Use this API to get a patron's image. 
+      operationId: getPatronImage
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve the patron's image. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: >-
+            The identifier of the patron for which the image needs to be retrieved. This is either the patronID or userGUID.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Patron image in one of the following formats: PNG, JPEG, GIF, TIFF or BMP. If the image does not match one of these formats, then it will be returned in octet-stream format.
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/gif:
+              schema:
+                type: string
+                format: binary
+            image/tiff:
+              schema:
+                type: string
+                format: binary
+            image/bmp:
+              schema:
+                type: string
+                format: binary 
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary                
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: getPatrons
+        '404':
+          description: >-
+            Patron image not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_PATRON_IMAGE_NOT_FOUND
+                  message: 'Image not found for patron (123)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/engageenabled':
+    get:
+      summary: Obtains Engage subscription status for the site and whether Reading Challenges are enabled.
+      description: >-
+        Use this API to get Engage subscription status for the site and whether Reading Challenges are enabled.
+      operationId: getEngageEnabled
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve Engage subscription information. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngageEnabledVO'
+              example:
+                engageEnabled: true
+                readingChallengesEnabled: false
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_ENGAGE_SUBSCRIPTION_INFO_NOT_FOUND
+                  message: 'Unable to fetch Engage subscription information for your site.'
+                  target: 'Engage subscription'
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+  '/sites/{siteId}/self/{principalId}/themeoptions':
+    get:
+      summary: Obtains the selected theme options for the logged in user at the logged in site.
+      description: >-
+        Use this API to get theme settings for the logged in user.
+      operationId: getThemeOptions
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve the user's theme options. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Object data containing the results of this API query.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinyThemeOptionsVO'
+              example:
+                themeName: 'https://fssuseruploads.blob.core.windows.net/user-uploads/production/ddThemes/MidnightBlue.json'
+                userInterface: large
+        '400':
+          description: 'The request could not be completed with the given information'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_THEME_OPTIONS_INFO_NOT_FOUND
+                  message: Unable to fetch theme options for user 'USER_GUID'.
+                  target: Theme options
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: BasicSearch
+        '404':
+          description: >-
+            The URL supplied is invalid.  Make sure the pathing and site identifier are correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_SITE_NOT_FOUND
+                  message: 'Site not found (100)'
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'  
+  '/sites/{siteId}/self/{principalId}/materials/populartitles':
+    get:
+      summary: Obtains the popular titles for the logged in user at the logged in site.
+      description: >-
+        Use this API to get the popular titles for the logged in user.
+      operationId: getPopularTitles
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve the popular titles. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            The requested information was successfully obtained.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TitlesCollection'
+              example:
+                value:
+                  - id: 224
+                    collectionType: 'library'
+                    title: 'The Red Barn'
+                    titleSortKey: 'THE RED BARN'
+                    author: 'Doe, John'    
+                    isbns: 
+                      - '978-3-16-148410-0'
+                    callNumber: 'FIC 123'
+                    materialType: 'BOOK'
+                    availability:
+                      status: 'OUT'
+                      totalCount: 3
+                      availableLocal: 0
+                    allowedActions: 
+                      - 'OPEN'
+                      - 'UNHOLD'
+        '401':
+          description: 'The access token is invalid, expired, or missing.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given resources permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: CatBasicSearch
+        '404':
+          description: >-
+            If patronId or siteId does not exist, return a not found status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_NOT_FOUND
+                  message: 'Could not find patron with id: ''500''' 
+  '/sites/{siteId}/self/{principalId}/materials/topics':
+    get:
+      summary: Obtains the list of topics for the logged in user at the logged in site.
+      description: >-
+        Use this API to get the list of topics  for the logged in user.
+      operationId: getTopics
+      tags:
+        - self
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The site in which to retrieve the popular titles. This can be the internalId or the siteGuid.
+          required: true
+          schema:
+            type: string
+        - name: principalId
+          in: path
+          description: >-
+            The identifier of the user authenticated into the service making this API call. This is often the userGUID of the user.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            The requested information was successfully obtained.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicsCarouselsCollection'
+              example:
+                value:
+                  - topicID: 96
+                    topicName: 'Graphic Novels'
+                    topicType: 'SUBJECT'
+                    position: 1 
+                    imageID: 91
+                    imageUrl: 'https://somebooksite.com/topics/91.png'
+                    subjects: 
+                      - 'Action and adventure comics'
+                      - 'Cartoons and comics'
+                      - 'Horror comics'
+                      - 'Superhero comics'
+                  - topicID: 98
+                    topicName: 'Chemicals'
+                    topicType: 'KEYWORD'
+                    position: 2 
+                    imageID: 92
+                    imageUrl: 'https://somebooksite.com/topics/92.png'
+                    keywordSearchTerm: 'nitrogen'
+                  - topicID: 99
+                    topicName: 'Olympics'
+                    topicType: 'SUBLOCATION'
+                    position: 3
+                    imageID: 93
+                    imageUrl: 'https://somebooksite.com/topics/93.png'
+                    sublocationID: 7553
+        '401':
+          description: 'The access token is invalid, expired, or missing.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given resources permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: CatBasicSearch
+        '404':
+          description: >-
+            If patronId or siteId does not exist, return a not found status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_NOT_FOUND
+                  message: 'Could not find patron with id: ''500''' 
+components:
+  securitySchemes:
+    authHeader:
+      description: 'Put the "accessToken" in the "Authorization" bearer header'
+      type: http
+      scheme: bearer
+    accessToken:
+      description: 'Put the "accessToken" in a query parameter'
+      type: apiKey
+      name: accessToken
+      in: query      
+  schemas:
+    PatronsCollection:
+      properties:
+        patrons:
+          type: array
+          items:
+            type: object
+            properties:
+              patronId: 
+                type: integer
+                description: 'The destiny id of the patron.'
+              userFirstName:
+                type: string
+                description: 'The patron''s first name.'
+              userMiddleName:
+                type: string
+                description: 'The patron''s middle name.'
+              userLastName:
+                type: string
+                description: 'The patron''s last name.'
+              userNickname:
+                type: string
+                description: 'The patron''s nickname.'
+              userGuid:
+                type: string
+                description: 'The patron''s GUID.'
+              userImageUrl:
+                type: string
+                description: 'The patron''s image url, if it exists.'
+              patronExists:
+                type: boolean
+                description: 'Whether or not the patron exists at the logged in user''s site.'
+    DiscoverCarouselsCollection:
+      properties:
+        carousels:
+          type: array
+          items:
+            type: object
+            properties:
+              carouselIdentifier: 
+                type: string
+                description: 'The unique identifier enum for the carousel at the site.'
+                enum: 
+                  - CUSTOM_CAROUSEL
+                  - TOPICS
+                  - AUDIOBOOKS
+                  - EBOOKS
+                  - POPULAR_TITLES
+                  - RECENTLY_ADDED
+                  - INTERACTIVE_EBOOKS
+              carouselName: 
+                type: string
+                description: 'The carousel''s name.'
+              position: 
+                type: integer
+                description: 'The position of where the carousel should be displayed in the UI.'
+    TopicsCarouselsCollection:
+      properties:
+        topics:
+          type: array
+          items:
+            type: object
+            properties:
+              topicName: 
+                type: string
+                description: 'The name of the topic.'
+              topicID: 
+                type: integer
+                description: 'The unique identifier of the topic.'
+              topicType: 
+                type: string
+                description: 'The type of topic.'
+                enum: 
+                  - KEYWORD
+                  - SUBJECT
+                  - SUBLOCATION
+              position: 
+                type: integer
+                description: 'The position of where the topic should be displayed in the UI.'
+              imageID: 
+                type: integer
+                description: 'The unique identifier for the image of the topic.'
+              imageUrl: 
+                type: string
+                description: 'The URL for the image of the topic.'
+              sublocationID: 
+                type: integer
+                description: 'The sublocation ID if it is a sublocation topic type.'
+              keywordSearchTerm: 
+                type: string
+                description: 'The keyword search term if it is a keyword topic type.'
+              subjects: 
+                type: array
+                items:
+                  type: string
+                  description: 'The string array containing list of subjects if it is a subject topic type.'
+    TitlesCollection:
+      properties:
+        value:
+          type: array
+          items:
+            type: object
+            properties:
+              id: 
+                type: integer
+                description: 'The identifier of the record in the database.'
+              collectionType: 
+                type: string
+                description: 'The collection the record belongs to.'
+                enum: [library, resource, textbook]
+              title: 
+                type: string
+                description: 'The record''s title.'
+              titleSortKey: 
+                type: string
+                description: 'The record''s sortable title.'
+              author: 
+                type: string
+                description: 'The record''s author.'    
+              isbns:
+                type: array
+                description: 'The record''s list of ISBNs.' 
+                items:
+                  type: string
+              callNumber: 
+                type: string
+                description: 'The record''s call number.'
+              materialType:
+                type: string
+                description: 'The record''s material type.'
+                enum: 
+                  - BOOK
+                  - COMPUTER_FILE
+                  - EQUIPMENT
+                  - FILM
+                  - FOLLETT_AUDIO_BOOK
+                  - FOLLETT_EBOOK
+                  - GENERIC_AUDIO_BOOK
+                  - GENERIC_EBOOK
+                  - GRAPHIC
+                  - INTERACTIVE_BOOK
+                  - KIT
+                  - LANGUAGE
+                  - LIGHTBOX
+                  - MAP
+                  - MIXED
+                  - MUSIC
+                  - MUSICAL_RECORDING
+                  - NON_MUSICAL_RECORDING
+                  - OBJECT
+                  - SERIAL
+              sublocation: 
+                type: string
+                description: 'The record''s sublocation.'
+              expires:
+                type: string
+                description: 'ISO 8601 date/time computed in UTC zone.'
+              ratingInformation:
+                $ref: '#/components/schemas/RatingInformation'
+              holdId: 
+                type: integer
+                description: 'The identifier of the hold record on the title in the database, if applicable.'
+              holdStatus:
+                type: string
+                description: 'The status of the hold on the title, if applicable.'
+                enum:
+                  - READY
+                  - PENDING
+              holdQueuePosition: 
+                type: integer
+                description: 'The position the user is in the queue for a Follett ebook hold, if applicable.'
+              availability:
+                $ref: '#/components/schemas/AvailabilityVO'
+              allowedActions:
+                type: array
+                description: 'The list of actions allowed for the material.' 
+                items:
+                  type: string
+                  enum:
+                  - READ
+                  - CHECK_OUT
+                  - RETURN
+                  - PLAY
+                  - OPEN
+                  - HOLD
+                  - UNHOLD
+        durationMillis: 
+          type: integer
+          description: 'Time it took the server to process the request.'
+        '@nextLink': 
+          type: string
+          description: 'This is a relative path to the next page. Used only for the original "GET" version of library search.'
+        hasAdditionalResults: 
+          type: boolean
+          description: 'When true, it means that there are additional search results beyond the current result set. Note - This property was added in API 1.7.0 and will only be included when using the "POST" version of library search, otherwise it will be null.'
+        nextSkipValue:
+          type: integer
+          description: 'If there are additional results beyond the current result set, this value will be populated with the proper $skip value for fetching the next page of results. Note - This property was added in API 1.7.0 and will only be included when using the "POST" version of library search, otherwise it will be null.'
+        modifiedSearchTerm:
+          type: string
+          description: 'Returning the search term that was sent in case we find District Unsearchable Words that get parsed out, we return the modified search string.'
+    TitlesBaseCollectionVO:
+      properties:
+        titles:
+          type: array
+          items:
+            type: object
+            properties:
+              id: 
+                type: integer
+                description: 'The identifier of the record in the database.'
+              collectionType: 
+                type: string
+                description: 'The collection the record belongs to.'
+                enum: [library, resource, textbook]
+              title: 
+                type: string
+                description: 'The record''s title.'
+              author: 
+                type: string
+                description: 'The record''s author.'    
+              isbns:
+                type: array
+                description: 'The record''s list of ISBNs.' 
+                items:
+                  type: string
+              callNumber: 
+                type: string
+                description: 'The record''s call number.'
+              materialType:
+                type: string
+                description: 'The record''s material type.'
+                enum: 
+                  - BOOK
+                  - COMPUTER_FILE
+                  - EQUIPMENT
+                  - FILM
+                  - FOLLETT_AUDIO_BOOK
+                  - FOLLETT_EBOOK
+                  - GENERIC_AUDIO_BOOK
+                  - GENERIC_EBOOK
+                  - GRAPHIC
+                  - INTERACTIVE_BOOK
+                  - KIT
+                  - LANGUAGE
+                  - LIGHTBOX
+                  - MAP
+                  - MIXED
+                  - MUSIC
+                  - MUSICAL_RECORDING
+                  - NON_MUSICAL_RECORDING
+                  - OBJECT
+                  - SERIAL
+              availability:
+                $ref: '#/components/schemas/AvailabilityVO'
+              allowedActions:
+                type: array
+                description: 'The list of actions allowed for the material.' 
+                items:
+                  type: string
+                  enum:
+                  - READ
+                  - CHECK_OUT
+                  - RETURN
+                  - PLAY
+                  - OPEN
+                  - HOLD
+                  - UNHOLD
+              materialExists:
+                type: boolean
+                description: 'Whether or not the material exists at the logged in user''s site.'
+    SearchRequest:
+      properties:
+        $search:
+          type: string
+          description: 'The query as entered by the user into the search box.'
+        $top:
+          type: integer
+          description: 'Number of records to return. Default value is 25.'
+        $skip:
+          type: integer
+          description: 'Number of records to skip. Default value is 0.' 
+        $count: 
+          type: boolean
+          default: false
+          description: >-
+            This flag instructs the API to return the number of results instead of the actual results.
+            This changes the content-type header to text/plain and returns a simple integer as a response.
+            Paging parameters are ignored in this case. This defaults to false. 
+            NOTE - This flag is not supported for searches that include the availability filter. An error will be thrown when both of these are set.
+        includeReviewRating:
+          type: boolean
+          default: false
+          description: 'When true, this will include additional information about ratings for the title. This defaults to false.'
+        includeAvailability:
+          type: boolean
+          default: false
+          description: 'When true, this will include additional information about availability for the title. This defaults to false.'
+        includeAllowedActions:
+          type: boolean
+          default: false
+          description: 'When true, this will include a list of allowed actions that can be performed on the material by the user. This defaults to false.'
+        materialType:
+          type: string
+          description: 'If included, the search will limit results to those matching the specified material type or group of material types. All material types will be included by default if this field is not specified.'
+          enum:
+            - ALL_MATERIAL_TYPES
+            - ALL_AUDIO_BOOKS
+            - ALL_EBOOKS
+            - BOOK
+            - COMPUTER_FILE
+            - EQUIPMENT
+            - FILM
+            - FOLLETT_AUDIO_BOOK
+            - FOLLETT_EBOOK
+            - GRAPHIC
+            - INTERACTIVE_BOOK
+            - KIT
+            - LANGUAGE
+            - LIGHTBOX
+            - MAP
+            - MIXED
+            - MUSIC
+            - MUSICAL_RECORDING
+            - NON_MUSICAL_RECORDING
+            - OBJECT
+            - SERIAL
+        availability:
+          type: string
+          description: 'If included, the search will limit results to those matching the specified availability or group of availabilities. All availability statuses will be included by default if this field is not specified.'
+          enum:
+            - ALL_STATUSES
+            - ALL_AVAILABLE
+            - UNLIMITED_ONLY
+        searchType:
+          type: string
+          description: 'If included, the search will limit results to those where the search term used matches only the field specified as the search type. A keyword search matching all fields will be run by default if this field is not specified.'
+          enum:
+            - KEYWORD
+            - TITLE
+            - AUTHOR
+            - SUBJECT
+            - SERIES
+        sublocationIDs:
+          type: array
+          description: 'If included, the search will limit results to materials assigned to the given list of sublocation IDs. Materials from all sublocations, including those without sublocations, will be included by default if this field is not specified.'
+          items:
+            type: integer
+    TitleDetails:
+      properties:
+        id:
+          type: string
+          description: 'The identifier of the material whose details were fetched.'
+        collectionType: 
+          type: string
+          description: 'The collection the record belongs to.'
+          enum: [library, resource, textbook]
+        title: 
+          type: string
+          description: 'The record''s title.'
+        responsiblity: 
+          type: string
+          description: 'The record''s responsiblity (245c).'    
+        isbns:
+          type: array
+          description: 'The record''s list of ISBNs.' 
+          items:
+            type: string
+        callNumber: 
+          type: string
+          description: 'The record''s call number.'
+        shortDescription:
+          type: string
+          description: 'A short description of the material.'
+        materialType:
+          type: string
+          description: 'The record''s material type.'
+          enum: 
+            - BOOK
+            - COMPUTER_FILE
+            - EQUIPMENT
+            - FILM
+            - FOLLETT_AUDIO_BOOK
+            - FOLLETT_EBOOK
+            - GENERIC_AUDIO_BOOK
+            - GENERIC_EBOOK
+            - GRAPHIC
+            - INTERACTIVE_BOOK
+            - KIT
+            - LANGUAGE
+            - LIGHTBOX
+            - MAP
+            - MIXED
+            - MUSIC
+            - MUSICAL_RECORDING
+            - NON_MUSICAL_RECORDING
+            - OBJECT
+            - SERIAL
+        sublocation: 
+          type: string
+          description: 'The record''s sublocation.'
+        acceleratedReader:
+          $ref: '#/components/schemas/QuizInfoVO'
+        readingCounts:
+          $ref: '#/components/schemas/QuizInfoVO'
+        lexile:
+          type: string
+          description: 'The record''s lexile measure, if any.'
+        fountasAndPinnell:
+          type: string
+          description: 'The record''s Fountas & Pinnell value, if any.'
+        ratingInformation:
+          $ref: '#/components/schemas/RatingInformation'
+        availability:
+          $ref: '#/components/schemas/AvailabilityVO'
+        allowedActions:
+          type: array
+          description: 'The list of actions allowed for the material.' 
+          items:
+            type: string
+            enum:
+            - READ
+            - CHECK_OUT
+            - RETURN
+            - PLAY
+            - OPEN
+            - HOLD
+            - UNHOLD
+    RatingInformation:
+      properties:
+        average: 
+          type: number
+          description: 'The record''s average rating.'
+        count: 
+          type: integer
+          description: 'The record''s total number of ratings.'
+    QuizInfoVO:
+      properties:
+        quizNumber:
+          type: string
+          description: the number of the quiz
+        points:
+          type: number
+          description: the points of the quiz
+        readingLevel:
+          type: number
+          description: the reading level of the quiz
+        interestLevel:
+          type: string
+          description: the interest level of the quiz
+    AvailabilityVO:
+      properties:
+        status:
+          type: string
+          description: 'The record''s status.'
+          enum:
+          - IN
+          - OUT
+          - UNLIMITED
+        totalCount:
+          type: integer
+          description: the total number of the resource that exists at the site
+        availableLocal:
+          type: integer
+          description: the number current available to circulate
+    ElectronicResourceVO:
+      properties:
+        url:
+          type: string
+          description: 'The electronic resource url.'
+    DestinyAudiobookReaderInfoVO:
+      properties:
+        id:
+          type: string
+          description: 'The identifier of the material whose info was fetched.'
+        title:
+          type: string
+          description: 'The title of the material.'
+        isbn:
+          type: string
+          description: 'The canonical isbn of the material.'
+        flrCustomerNumber:
+          type: string
+          description: 'The flr customer number of the site where the matrial resides.'
+        readerCheckoutType:
+          type: string
+          description: 'The list of actions allowed for the material.' 
+          enum:
+            - ONLINE
+            - OFFLINE
+            - READ_ONLINE
+            - PLAY_ONLINE
+            - LUT_PREVIEW
+        audiobookLicenseId:
+          type: string
+          description: 'The license id of the checkout of the audiobook.'
+        audiobookAccountId:
+          type: string
+          description: 'The account id associated with the site.'
+        audiobookId:
+          type: string
+          description: 'The findaway id of the audiobook.'
+        findawayConsumerKey:
+          type: string
+          description: 'The findaway consumer key -- an environment prefix and a userguid.'
+        findawaySessionToken:
+          type: string
+          description: 'The session token from findaway to read the audkiobook.'
+        coverImageUrl:
+          type: string
+          description: 'The url to request the cover image from.'
+        chapterized:
+          type: boolean
+          description: 'Indicates whether or not the chapter information is reliable.'
+        chapters:
+          type: array
+          description: 'An array of Findaway Chapters, each containing chapter number, part number, and duration.' 
+          items:
+            $ref: '#/components/schemas/FindawayChapter'
+    DestinyEBookReaderInfoVO:
+      properties:
+        id:
+          type: string
+          description: 'The identifier of the material whose info was fetched.'
+        isbn:
+          type: string
+          description: 'The canonical isbn of the material.'
+        flrCustomerNumber:
+          type: string
+          description: 'The flr customer number of the site where the matrial resides.'
+        bookVaultTransToken:
+          type: string
+          description: 'The book vault transaction token assigned at checkout.'
+        userGuid:
+          type: string
+          description: 'The guid of the calling user.'
+        userName:
+          type: string
+          description: 'The username of the calling user.'
+        readerCheckoutType:
+          type: string
+          description: 'The list of actions allowed for the material.' 
+          enum:
+            - ONLINE
+            - OFFLINE
+            - READ_ONLINE
+            - PLAY_ONLINE
+            - LUT_PREVIEW
+    DestinyClassSetAssignmentCollectionVO:
+      properties:
+        assignments:
+          type: array
+          description: 'A list of assigned materials.'
+          items:
+            $ref: '#/components/schemas/DestinyClassSetAssignmentVO'
+        notificationCount:
+          type: integer
+          description: 'a count of how many of the contained assignments have their notify flag set to true.'
+    DestinyClassSetAssignmentVO:
+      properties:
+        title:
+          type: string
+          description: 'The title of the material.'
+        author:
+          type: string
+          description: 'The author of the material.'
+        materialType:
+          type: string
+          description: 'The material type of the material.'
+          enum: 
+            - FOLLETT_AUDIO_BOOK
+            - FOLLETT_EBOOK
+        isbn:
+          type: string
+          description: 'The isbn of the material.'
+        ktsid:
+          type: integer
+          description: 'The ktsid of the material.'
+        dueDate:
+          type: string
+          description: 'ISO 8601 date/time computed in UTC zone.'
+        notify:
+          type: boolean
+          description: 'a flag indicating that this assignment should cause a notification.'
+        allowedActions:
+          type: array
+          description: 'The allowed actions on the material.'
+          items:
+            type: string
+            enum:
+              - READ
+              - PLAY
+    CirculationRequest:
+      properties:
+        id:
+          type: string
+          description: 'The identifier of the material to be circulated.'
+        doOnline:
+          type: boolean
+          default: false
+          description: perform a read- or play- online checkout if true. Added in 1.4.0.
+    CirculationResult:
+      properties:
+        id:
+          type: integer
+          description: 'The identifier of the material circulated.'
+        title:
+          type: string
+          description: 'The title of the material circulated.'
+        expires:
+          type: string
+          description: 'ISO 8601 date/time computed in UTC zone.'
+        allowedActions:
+          type: array
+          description: 'The list of actions allowed for the material.' 
+          items:
+            type: string
+            enum:
+            - READ
+            - CHECK_OUT
+            - RETURN
+            - PLAY
+            - HOLD
+            - UNHOLD
+        availability:
+          $ref: '#/components/schemas/AvailabilityVO'
+    HoldRequest:
+      properties:
+        id:
+          type: string
+          description: 'The identifier of the material to be held.'
+    HoldResult:
+      properties:
+        id:
+          type: integer
+          description: 'The identifier of the material that had its hold added or removed.'
+        title:
+          type: string
+          description: 'The title of the material.'
+        expires:
+          type: string
+          description: 'ISO 8601 date/time computed in UTC zone of the hold expiration date, if applicable.'
+        allowedActions:
+          type: array
+          description: 'The list of actions allowed for the material.' 
+          items:
+            type: string
+            enum:
+            - READ
+            - CHECK_OUT
+            - RETURN
+            - PLAY
+            - HOLD
+            - UNHOLD
+            - OPEN
+        holdId:
+          type: integer
+          description: 'The identifier of the hold that was added, if applicable.'
+        holdStatus:
+          type: string
+          description: 'The status of the hold that was added, if applicable.'
+          enum:
+            - READY
+            - PENDING
+        holdQueuePosition:
+          type: integer
+          description: 'The position the user is in the queue for a Follett ebook hold, if applicable.'
+        availability:
+          $ref: '#/components/schemas/AvailabilityVO'
+    FindawayChapter:
+      properties:
+        chapterNumber:
+          type: integer
+          description: The chapter number.
+        partNumber:
+          type: integer
+          description: The part number.
+        duration:
+          type: integer
+          description: The track duration in milliseconds.
+    SublocationCollection:
+      properties:
+        sublocations:
+          type: array
+          items:
+            type: object
+            properties:
+              sublocationID: 
+                type: integer
+                description: 'The unique identifier for the sublocation at the site.'
+              sublocationName: 
+                type: string
+                description: 'The sublocation''s name.'
+    EngageEnabledVO:
+      properties:
+        engageEnabled:
+          type: boolean
+          description: Whether or not the Engage module is enabled.
+        readingChallengesEnabled:
+          type: boolean
+          description: Whether or not Reading Challenges are enabled.
+    DestinyThemeOptionsVO:
+      properties:
+        themeName:
+          type: string
+          description: The url to the user's selected theme palette json file. This used to be just the theme name for DD web, but now it contains the url so that web and mobile can share the json file.
+        userInterface:
+          type: string
+          description: Whether the theme should have large or regular size cover images.
+    PatronAuthGrantsVO:
+      properties:
+        patronType:
+          type: object
+          properties:
+            id: 
+              type: integer
+              description: 'The identifier of the patron type in the database.'
+            name: 
+                type: string
+                description: 'The patron type description.'
+        role:
+          type: object
+          properties:
+            id: 
+              type: integer
+              description: 'The identifier of the role in the database.'
+            name: 
+              type: string
+              description: 'The role description.'
+            sessionTimeoutMillis:
+              type: integer
+              description: 'Session timeout for role.'
+        permissions:
+          type: array
+          items:
+            type: string
+            example: 'AddTitles, EditTitles, DeleteTitles'
+        scopes:
+          type: array
+          items:
+            type: string
+            example: 'LIBRARY_ACCESS,RESOURCE_ACCESS'
+        imsRole:
+          type: string
+          description: 'IMS Role defined by role.'
+        persona:
+          type: string
+          description: 'Persona assigned to patron type.'
+    PatronSitesSelfVO:
+      properties:
+        patronSites:
+          type: array
+          description: 'A list of patron sites.'
+          items:
+            $ref: '#/components/schemas/PatronSiteSelfVO'          
+        durationMillis: 
+          type: integer
+          description: 'Time it took the server to process the request.'          
+    PatronSiteSelfVO:
+      properties:
+        guid:
+          type: string
+          description: 'Site guid.'
+        siteName:
+          type: string
+          description: 'Site name.' 
+        siteType:
+          type: object
+          properties:
+            id:
+              type: string
+              description: 'Site Type ID.'
+            name:
+              type: string
+              description: 'Site Type Name.'
+            priorityOrder:
+              type: integer
+              description: 'Site Type Priority Order.'
+        librarySite:
+          type: boolean
+          description: 'Site is a library site.'
+        mediaSite:
+          type: boolean
+          description: 'Site is a media site.'
+        resourceSite:
+          type: boolean
+          description: 'Site is a resource site.'
+        districtWarehouse:
+          type: boolean
+          description: 'Site is a district warehouse site.'
+        districtAdvancedBooking:
+          type: boolean
+          description: 'Site is a district advanced booking site.'
+        enrolled:
+          type: boolean
+          description: 'Patron is enrolled at the site.'
+        primarySite:
+          type: boolean
+          description: 'This is the primary site for the patron.'
+        guestAllowed:
+          type: boolean
+          description: 'guest is allowed at this site.'
+        durationMillis: 
+          type: integer
+          description: 'Time it took the server to process the request.'
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        error:
+          type: object
+          properties: 
+            code:
+              type: string
+              description: 'Identifies the type of errors that could happen when calling this API.'
+              enum: 
+                - CODE_BAD_REQUEST
+                - CODE_MISSING_TOKEN
+                - CODE_INVALID_TOKEN
+                - CODE_EXPIRED_TOKEN     
+                - CODE_UNKNOWN_APPID                
+                - CODE_INSUFFICIENT_RIGHTS_TO_API
+                - CODE_INTERNAL_SERVER_ERROR
+                - CODE_SITE_NOT_FOUND
+                - CODE_INSUFFICIENT_USER_PERMISSIONS
+                - CODE_CONTEXT_NOT_FOUND
+                - CODE_CONTEXT_REQUIRED_IN_CONSORTIUM
+                - CODE_COUNT_INVALID
+                - CODE_SKIP_INVALID
+                - CODE_TOP_INVALID
+                - CODE_SELF_SERVICE_PATH_INVALID
+                - CODE_MATERIAL_NOT_FOUND
+                - CODE_CHECKOUT_CANNOT_BE_PERFORMED
+                - CODE_CHECKIN_CANNOT_BE_PERFORMED
+                - CODE_INFO_NOT_FOUND
+                - CODE_INFO_CHECKOUT_NOT_FOUND
+            message:
+              type: string
+              description: 'A human readable message about the error.'
+            target:
+              type: string
+              description: 'Field, parameter or path associated with the error.'
+            logId:
+              type: string
+              description: 'A unique value generated and written to the Destiny log file in association with the error.'

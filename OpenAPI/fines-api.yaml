@@ -1,0 +1,699 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Destiny API -- Fines
+servers:
+  - url: '/api/v{apiVersion}/rest/context/{contextName}'
+    variables: 
+      apiVersion: 
+        default: '1'
+        description: Major version
+      contextName: 
+        default: destiny
+        description: >-
+          This identifies which Destiny district needs to be accessed.  If the
+          Destiny server being accessed does not host multiple districts, the
+          value for this can be set to "destiny"
+  - url: '/api/v{apiVersion}/rest'
+    variables: 
+      apiVersion: 
+        default: '1'
+        description: Major version of the API being used
+paths:
+  '/fines':
+    get:
+      summary: Get fines across the district
+      description: >-
+        This API can be used to retrieve all the fines across the district.  It can be optionally limited to by query parameters as documented below.  Information about the fine, site owning the fine, 
+        patron, title, copy are returned. 
+
+        <br>The following types of fines can be returned by this API.
+        <ul>
+        <li>Fines associated with specific copies</li>
+        <li>Fines associated with unbarcoded copies (The barcode will be null)</li>
+        <li>Fines associated with a specific title</li>
+        <li>Patron only fines (No copy information will be provided)</li>
+        <li>Fines involving components</li>
+        <li>Patron fees</li>
+        </ul>
+        Note - If a resource associated with a fine is deleted, resource type information will not presented for the copy.
+      operationId: getFinesAcrossDistrict
+      tags:
+        - fines
+      parameters:
+        - name: districtId
+          in: query
+          description: >-
+            Limit query to patron matching the given district identifier
+          required: false
+          schema:
+            type: string
+        - name: patronBarcode
+          in: query
+          description: >-
+            Limit query to patron matching the given barcode
+          required: false
+          schema:
+            type: string
+        - name: siteId
+          in: query
+          description: >-
+            Limit query to patrons at the given site
+          required: false
+          schema:
+            type: string
+        - name: collectionType
+          in: query
+          description: >-
+            Limit query to library, textbook or resource manager collection type
+          required: false
+          schema:
+            type: string
+            enum: [textbook, library, resource]
+      responses:
+        '200':
+          description: >-
+            List of fines across the district based upon matching criteria.  If there are no fines found, an empty list is presented.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DistrictFines'
+              example:
+                - site:
+                    guid: 'd96ad6cb-d7e9-4416-bf75-9ec42db4af50'
+                    internalId: 267
+                    name: 'Elmwood Elementary'
+                    shortName: 'ELM'
+                  patron:
+                    primarySiteGuid: 'd96ad6cb-d7e9-4416-bf75-9ec42db4af50'
+                    primarySiteName: 'Elmwood Elementary'
+                    primarySiteShortName: 'ELM'
+                    guid: '0b75062d-6067-4759-aa1b-c8fe5c349694'
+                    internalId: 123
+                    districtId: '2020-789'
+                    barcode: 'P 12383'
+                    lastName: 'Stantz'
+                    firstName: 'Raymond'
+                  fines:
+                    - internalId: 276
+                      collectionType: 'library'
+                      type: 'Damaged'
+                      dateCreated: '2018-92-27T13:27:25.0Z'
+                      description: 'Power Cable for Acer Laptop'
+                      note: 'Had a crack in it'
+                      bib:
+                        internalId: 100
+                        title: 'Acer Laptop'
+                      copy:
+                        internalId: 210
+                        siteId: 267
+                        barcode: 'T 168765'
+                        resourceType:
+                          internalId: 12345
+                          name: 'Tablets'
+                      component:
+                        internalId: 7452
+                        title: 'Power Cable'
+                      paymentSummary:
+                        amountDue: 23.00
+                        amount: 23.00
+                        paid: 0.00
+                        waived: 0.00
+                        refundAmount: 0.00
+                        refundPaid: 0.00
+                        currencyUnit: 'usd'
+                    - internalId: 567
+                      collectionType: 'patron'
+                      type: 'Being Loud'
+                      dateCreated: '2018-02-29T5:17:26.0Z'
+                      description: 'Fine for Stantz, Raymond'
+                      note: 'Individual was warned many times but continued to be disruptive'
+                      paymentSummary:
+                        amountDue: 2.37
+                        amount: 2.37
+                        paid: 0.00
+                        waived: 0.00
+                        refundAmount: 0.00
+                        refundPaid: 0.00
+                        currencyUnit: 'usd'
+                    - internalId: 395
+                      collectionType: 'resource'
+                      type: 'lost'
+                      dateCreated: '2018-02-27T13:27:25.0Z'
+                      description: 'Power Cable for Acer Laptop'
+                      bib:
+                        internalId: 100
+                        title: 'The red barn'
+                      copy:
+                        internalId: 5872
+                        siteId: 267
+                        barcode: 'T 2384'
+                        resourceType:
+                          internalId: 123
+                          name: 'Cables'
+                      paymentSummary:
+                        amountDue: -14.25 
+                        amount: 19.25    
+                        paid: 16.25  
+                        wiaved: 3.00                
+                        refundAmount: 16.25
+                        refundPaid: 2.00
+                        currencyUnit: 'usd'
+                    - internalId: 639
+                      collectionType: 'resource'
+                      type: 'Device Insurance'
+                      dateCreated: '2018-02-29T5:17:26.0Z'
+                      description: 'Fee for Stantz, Raymond'
+                      paymentSummary:
+                        amountDue: 25.00
+                        amount: 25.00
+                        paid: 0.00
+                        waived: 0.00
+                        refundAmount: 0.00
+                        refundPaid: 0.00
+                        currencyUnit: 'usd'
+
+        '400':
+          description: 'If any of the fields cannot be parsed correctly, such as collectionType'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_BAD_REQUEST
+                  message: '<fieldName> is invalid'
+                  target: <fieldName>
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given fines permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: FinesPayLibrary
+        '500':
+          description: 'This is an unexpected fault/error in the server'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INTERNAL_SERVER_ERROR
+                  message: 'Something bad happened in the server'
+                  logId: kxEtz
+  '/fines/payments':
+    post:
+      summary: Pay fines across the district
+      description: >-
+        This API should be used to submit fine payments back to the Destiny server.  A list of one or more payment objects should be sent.  Destiny will respond with a list of fine payment 
+        receipts that should be used to make final confirmation that the fine has been paid.
+
+        <br><br>For each payment, the amount is applied to the fine referenced by the fineId in the fine payment object.  The externalPaymentId is provided as a convenience to reference back to
+        after the payment has successfully been applied.  This will be returned in the fine payment object embedded within the fine payment receipt object.
+        
+        <br><br>When combining payments, waivers, refunds, and reversals in an API call, please keep the following in mind. Payments and waivers can be combined, and the reversals can be combined. However, refunds must be submitted alone.
+
+        <br><br>The fine balance be affected through the following FinePayment fields
+        <ul>
+            <li><strong>Payment</strong> Pay all or part of the fine</li>
+            <li><strong>Waiver</strong> Waive all or part of the fine</li>
+            <li><strong>Refund</strong> Refund all or part of the fine</li>
+            <li><strong>PaymentReversal</strong> Remove a specific payment applied to the fine</li>
+            <li><strong>WaiverReversal</strong> Remove a specific waiver applied to the fine</li>
+        </ul>
+      operationId: payFinesAcrossDistrict
+      tags:
+        - fines
+      requestBody:
+        description: 'A list of one or more fine payments to make'
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/FinePayment'
+            example:
+              - fineId: 224
+                externalPaymentId: '001-23438F'
+                payment: 2.37
+              - fineId: 125
+                externalPaymentId: '001-27378G'
+                payment: 1.27
+                waiver: 2.00
+              - fineId: 424
+                externalPaymentId: '001-29488I'
+                refund: 2.00
+              - fineId: 1537
+                externalPaymentId: '001-58714K'
+                paymentReversal: 9.99
+              - fineId: 6978
+                externalPaymentId: '001-98436M'
+                waiverReversal: 5.00
+      responses:
+        '200':
+          description: >-
+            List of fine payment receipts.  Each receipt is a reference to the original fine payment and status of payment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinePaymentReceipt'
+              example:
+                - fineId: 224
+                  externalPaymentId: '001-23438F'
+                  fineType: 'Damaged'
+                  patron:
+                    primarySiteGuid: 'd96ad6cb-d7e9-4416-bf75-9ec42db4af50'
+                    primarySiteName: 'Elmwood Elementary'
+                    primarySiteShortName: 'ELM'
+                    guid: '0b75062d-6067-4759-aa1b-c8fe5c349694'
+                    internalId: 123
+                    districtId: '2020-789'
+                    barcode: 'P 12383'
+                    lastName: 'Stantz'
+                    firstName: 'Raymond'
+                  site:
+                    guid: 'd96ad6cb-d7e9-4416-bf75-9ec42db4af50'
+                    internalId: 267
+                    name: 'Elmwood Elementary'
+                    shortName: 'ELM'
+                  payment: 
+                    status: "success"
+                    message: "Payment applied $2.37"
+                    amount: 2.37
+                  paymentSummary:
+                    amountDue: 0.00
+                    amount: 2.37
+                    paid: 2.37
+                    waived: 0.00
+                    refundAmount: 0.00
+                    refundPaid: 0.00
+                    currencyUnit: 'usd'
+                    paymentReversed: 0
+                    waiverReversed: 0
+                - fineId: 125
+                  fineType: 'Overdue'
+                  externalPaymentId: '001-27378G'
+                  payment: 
+                    status: "unchanged"
+                    message: "FineId 125 not found"
+                    amount:  1.27
+                  waiver: 
+                    status: "unchanged"
+                    message: "FineId 125 not found"
+                    amount: 2.00
+                - fineId: 424
+                  externalPaymentId: '001-29488I'
+                  fineType: 'Overdue'
+                  patron:
+                    guid: '26708b77-1943-44ce-801f-88cab47cfaf4'
+                    internalId: 123
+                    districtId: '2020-795'
+                    barcode: 'P 384763'
+                    lastName: 'Spengler'
+                    firstName: 'Egon'
+                  site:
+                    guid: '1cc660cc-7b99-451e-9dbc-0d291dd8174c'
+                    internalId: 267
+                    name: 'Cherryvale High School'
+                    shortName: 'CHE'
+                  refund: 
+                    status: "success"
+                    message: "Payment applied $2.00"
+                    amount: 2.00
+                  paymentSummary:
+                    amountDue: 0.00
+                    amount: 2.00
+                    paid: 2.00
+                    waived: 0.00
+                    refundAmount: 2.00
+                    refundPaid: 2.00
+                    currencyUnit: 'usd'
+                    paymentReversed: 0
+                    waiverReversed: 0
+                - fineId: 1537
+                  externalPaymentId: '001-58714K'
+                  fineType: 'Lost'
+                  patron:
+                    guid: '26708b77-1943-44ce-801f-88cab47cfaf4'
+                    internalId: 123
+                    districtId: '2020-795'
+                    barcode: 'P 384763'
+                    lastName: 'Spengler'
+                    firstName: 'Egon'
+                  site:
+                    guid: '1cc660cc-7b99-451e-9dbc-0d291dd8174c'
+                    internalId: 267
+                    name: 'Cherryvale High School'
+                    shortName: 'CHE'
+                  paymentReversal: 
+                    status: "success"
+                    message: "Payment reversed $9.99"
+                    amount: 9.99
+                  paymentSummary:
+                    amountDue: 9.99
+                    amount: 9.99
+                    paid: 0.00
+                    waived: 0.00
+                    refundAmount: 0.00
+                    refundPaid: 0.00
+                    currencyUnit: 'usd'
+                    paymentReversed: 9.99
+                    waiverReversed: 0
+                - fineId: 6978
+                  externalPaymentId: '001-98436M'
+                  fineType: 'Overdue'
+                  patron:
+                    guid: '26708b77-1943-44ce-801f-88cab47cfaf4'
+                    internalId: 123
+                    districtId: '2020-795'
+                    barcode: 'P 384763'
+                    lastName: 'Spengler'
+                    firstName: 'Egon'
+                  site:
+                    guid: '1cc660cc-7b99-451e-9dbc-0d291dd8174c'
+                    internalId: 267
+                    name: 'Cherryvale High School'
+                    shortName: 'CHE'
+                  waiverReversal: 
+                    status: "success"
+                    message: "Waiver reversed $5.00"
+                    amount: 5.00
+                  paymentSummary:
+                    amountDue: 10.00
+                    amount: 20.00
+                    paid: 10.00
+                    waived: 0.00
+                    refundAmount: 0.00
+                    refundPaid: 0.00
+                    currencyUnit: 'usd'
+                    paymentReversed: 0
+                    waiverReversed: 5.0
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given fines permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: FinesPayLibrary
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: 'Something bad happened in the server'
+                  logId: 'kxEtz'
+components:
+  securitySchemes:
+    authHeader:
+      description: 'Put the "accessToken" in the "Authorization" bearer header'
+      type: http
+      scheme: bearer
+    accessToken:
+      description: 'Put the "accessToken" in a query parameter'
+      type: apiKey
+      name: accessToken
+      in: query
+  schemas:
+    BriefPatron:
+      properties:
+        primarySiteGuid: 
+          type: string
+          description: 'This identifiers the primary site of the user.  It may not be the same site which the fine was generated at.'
+        primarySiteName: 
+          type: string
+          description: 'The full name of the patron''s primary site.'
+        primarySiteShortName: 
+          type: string
+          description: 'The short name of the patron''s primary site.'
+        guid:
+          type: string
+          description: 'A globally unique identifier to the Destiny patron.'
+        internalId:
+          type: integer
+          description: 'The patron identifier in the Destiny database.'
+        districtId:
+          type: string
+          description: 'A patron identifier which is unique within the Destiny district.'
+        barcode:
+          type: string
+          description: 'The barcode of the patron at their primary site.'
+        lastName:
+          type: string
+          description: 'The last name of the patron.'
+        firstName:
+          type: string
+          description: 'The first name of the patron.'
+        middleName:
+          type: string
+          description: 'The middle name of the patron.'
+    BriefSite:
+      properties:
+        guid: 
+          type: string
+          description: 'A globally unique identifier to the Destiny site.'
+        internalId:
+          type: integer
+          description: 'The site identifier in the Destiny database.'
+        name:
+          type: string
+          description: 'The name of the site.'
+        shortName:
+          type: string
+          description: 'The short name of the site.'
+    FinePaymentSummary:
+      properties:
+        amountDue:
+          type: number
+          description: 'This is the amount owed by the patron.  A negative value will be presented if money is owed back to the patron.'
+        amount:
+          type: number
+          description: 'This is the original amount of the fine.'
+        paid:
+          type: number
+          description: 'This is the amount of the fine that has been paid.'
+        waived:
+          type: number
+          description: 'This is the amount of the fine that has been waived.'
+        refundAmount:
+          type: number
+          description: 'This is an amount of the fine that is owed back to the patron.'
+        refundPaid:
+          type: number
+          description: 'This is the amount of the fine that has been given back to the patron.'
+        currencyUnit:
+          type: string
+          description: 'This is a three digit code identifying what currency was used to assess the fine.'
+    DistrictFines:
+      properties:
+        site:
+          $ref: '#/components/schemas/BriefSite'        
+        patron:
+          $ref: '#/components/schemas/BriefPatron'        
+        fines:
+          type: array
+          items:
+            type: object
+            properties:
+              internalId:
+                type: integer
+                description: 'The fine identifier in the Destiny database.'
+              collectionType:
+                type: string
+                description: "The collection type of the fine."
+                enum: [library, textbook, resource, patron]
+              type:
+                type: string
+                description: 'lost, damaged, overdue or a custom fine type.'
+              dateCreated:
+                type:  string
+                description: 'ISO 8601 date/time computed in UTC zone.'
+              description:
+                type: string
+                description: 'This gives a general description the copy or bib that the fine is about as it would be presented in Destiny.'
+              paymentSummary:
+                $ref: '#/components/schemas/FinePaymentSummary'        
+              note: 
+                type: string
+              bib: 
+                type: object
+                properties:
+                  internalId: 
+                    type: integer
+                    description: 'The bib identifier in the Destiny database.'
+                  title:
+                    type: string
+                    description: 'The title of the copy associated with the fine.'
+                  budgetCateogory:
+                    type: string
+                    description: 'The budget category associated with the title'
+              copy:
+                type: object
+                properties:
+                  internalId:
+                    type: integer
+                    description: 'The copy identifier in the Destiny database.'
+                  siteId:
+                    type: integer
+                    description: 'The site associated with the copy.'
+                  barcode:
+                    type: string
+                    description: 'The barcode of the copy.'    
+                  resourceType:
+                    type: object
+                    properties:
+                      internalId:
+                        type: integer
+                        description: 'The resourceType identifier in the Destiny database.'
+                      name:
+                        type: string
+                        description: 'The name of the resourceType of the copy.'
+              component:
+                type: object
+                properties:
+                  internalId:
+                    type: integer
+                    description: 'The identifier of the component.'
+                  title:
+                    type: string
+                    description: 'The title of the component.'
+    FinePayment:
+      required: [fineId]
+      properties:                    
+        fineId: 
+          type: integer
+          description: 'The fine identifier in the Destiny database.'
+        externalPaymentId:
+          type: string
+          description: 'Use this field to associate another useful identifier to the fine payment transaction.  Destiny will store that value in the audit record.'
+        payment:
+          type: number
+          description: 'Use this field to submit a payment toward the given fine.'
+        waiver: 
+          type: number
+          description: 'Use this field to waive part or all of the fine balance.'
+        refund:
+          type: number
+          description: 'Use this field to indicate a refund back to the patron.'
+        paymentReversal:
+          type: number
+          description: 'Use this field to specify a payment to undo. This value must match a payment already made. That payment will be added back into the balance.'
+        waiverReversal: 
+          type: number
+          description: 'Use this field to specify a waiver to undo. This value must match a waiver already applied to the fine. That waiver will be added back into the balance.'
+    FinePaymentReceipt:
+      properties:
+        fineId: 
+          type: number
+          description: 'The fine identifier in the Destiny database.'
+        externalPaymentId:
+          type: string
+          description: 'This is will contain the value which was supplied in the submitted FinePayment object.'
+        fineType:
+          type: string
+          description: 'lost, damaged, overdue or a custom fine type'
+        patron:
+          $ref: '#/components/schemas/BriefPatron'                
+        site:
+          $ref: '#/components/schemas/BriefSite'
+        payment:
+          $ref: '#/components/schemas/PaymentAction'        
+        waiver: 
+          $ref: '#/components/schemas/PaymentAction'        
+        refund:
+          $ref: '#/components/schemas/PaymentAction'        
+        paymentSummary:
+          $ref: '#/components/schemas/FinePaymentSummary' 
+        paymentReversal:
+          $ref: '#/components/schemas/PaymentAction'        
+        waiverReversal: 
+          $ref: '#/components/schemas/PaymentAction' 
+    PaymentAction:
+      properties:
+        status:
+          type: string
+          enum: [success, unchanged]
+        message: 
+          type: string
+          description: 'A human readable message about the fine payment/waiver/refund/payment reversal/waiver reversal.'
+        amount:
+          type: number
+          description: 'The amount which was submitted for fine payment/waiver/refund/payment reversal/waiver reversal.'
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        error:
+          type: object
+          properties: 
+            code:
+              type: string
+              description: 'Identifies the type of errors that could happen when calling this API.'
+              enum: 
+                - CODE_MISSING_TOKEN
+                - CODE_INVALID_TOKEN
+                - CODE_EXPIRED_TOKEN
+                - CODE_UNKNOWN_APPID
+                - CODE_CONTEXT_NOT_FOUND
+                - CODE_CONTEXT_REQUIRED_IN_CONSORTIUM
+                - CODE_INVALID_PATH
+                - CODE_INSUFFICIENT_RIGHTS_TO_API
+                - CODE_EMPTY_REQUEST
+                - CODE_SITE_NOT_FOUND
+                - CODE_SITEID_INVALID
+                - CODE_PAYMENT_AND_REFUND_IN_REQUEST
+                - CODE_PAYMENT_WAIVER_AND_REFUND_NOT_PROVIDED
+                - CODE_EXTERNAL_PAYMENT_IDENTIFIER_EXCEEDS_255_CHARACTERS
+                - CODE_INTERNAL_SERVER_ERROR
+                - CODE_PAYMENT_REVERSAL_OR_WAIVER_REVERSAL_NOT_PROVIDED
+                - CODE_PAYMENT_OR_WAIVER_REVERSAL_NEGATIVE
+                - CODE_REVERSAL_AND_PAYMENT_WAIVER_REFUND_IN_REQUEST
+            message:
+              type: string
+              description: 'A human readable message about the error.'
+            target:
+              type: string
+              description: 'Field, parameter or path associated with the error.'
+            logId:
+              type: string
+              description: 'A unique value generated and written to the Destiny log file in association with the error.'

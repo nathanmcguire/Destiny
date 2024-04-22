@@ -1,0 +1,115 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Destiny API -- Status
+servers:
+  - url: '/api/v{apiVersion}/rest/context/{contextName}'
+    variables: 
+      apiVersion: 
+        default: '1'
+        description: Major version
+      contextName: 
+        default: destiny
+        description: >-
+          This identifies which Destiny district needs to be accessed.  If the
+          Destiny server being accessed does not host multiple districts, the
+          value for this can be set to "destiny"
+  - url: '/api/v{apiVersion}/rest'
+    variables: 
+      apiVersion: 
+        default: '1'
+        description: 'Major version of the API being used'
+paths:
+  '/status':
+    get:
+      summary: 'Get status information'
+      description: >-
+        Get general status information about the Destiny Open API.  The call to this API endpoint requires that you have an API credential setup in Destiny
+        but it does not require any specific permissions on that credential.
+      operationId: getStatus
+      tags:
+        - status
+      responses:
+        '200':
+          description: >-
+            Information about the API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+              example:
+                fullVersion: "3.5"
+                majorVersion: 3
+                minorVersion: 5
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+components:
+  securitySchemes:
+    authHeader:
+      description: Put the "accessToken" in the "Authorization" bearer header
+      type: http
+      scheme: bearer
+    accessToken:
+      description: Put the "accessToken" in a query parameter
+      type: apiKey
+      name: accessToken
+      in: query
+  schemas:
+    Status:
+      properties:
+        fullVersion:
+          type: string
+          description: 'A string representation of the API version.'
+        majorVersion:
+          type: integer
+          description: 'The major version of this API.'
+        minorVersion:
+          type: integer
+          description: 'The minor version of this API.'
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        error: 
+          type: object
+          properties:           
+            code:
+              type: string
+              description: 'Identifies the type of errors that could happen when calling this API.'
+              enum: 
+                - CODE_MISSING_TOKEN
+                - CODE_INVALID_TOKEN
+                - CODE_EXPIRED_TOKEN                
+                - CODE_CONTEXT_NOT_FOUND
+                - CODE_CONTEXT_REQUIRED_IN_CONSORTIUM
+                - CODE_UNKNOWN_APPID
+                - CODE_UNAUTHORIZED_ACCESS
+            message:
+              type: string
+              description: 'A human readable message about the error.'
+            target:
+              type: string
+              description: 'Field, parameter or path associated with the error'
+            logId:
+              type: string
+              description: 'A unique value generated and written to the Destiny log file in association with the error.'

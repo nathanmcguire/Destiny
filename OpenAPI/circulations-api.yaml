@@ -1,0 +1,678 @@
+openapi: 3.0.0
+info:
+  version: 1.3.0
+  title: Destiny API -- Circulations
+servers:
+  - url: '/api/v{apiVersion}/rest/context/{contextName}'
+    variables: 
+      apiVersion: 
+        default: '1'
+        description: Major version
+      contextName: 
+        default: destiny
+        description: >-
+          This identifies which Destiny district needs to be accessed.  If the
+          Destiny server being accessed does not host multiple districts, the
+          value for this can be set to "destiny"
+  - url: '/api/v{apiVersion}/rest'
+    variables: 
+      apiVersion: 
+        default: '1'
+        description: Major version of the API being used
+
+paths:
+  '/circulation/patrons/{id}/status':
+    get:
+      summary: Get patron checkouts across the district
+      description: >-
+        Get checkouts for a patron.
+      operationId: getPatronCheckouts
+      tags:
+        - circulations
+      parameters:
+        - name: id
+          in: path
+          description: >-
+            The identifier used to lookup the patron.  This can be either the "districtId", "guid" or the "internalId"
+          required: true
+          schema:
+            type: string
+        - name: collectionType
+          in: query
+          description: >-
+            Limits results to a specific collection type (library, resource)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            The requested information was successfully obtained.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatronCheckouts'
+              example:
+                internalId: 1
+                guid: '656d370b-4fd8-41a2-958e-cf8176bb29a4'
+                districtId: '100'
+                lastName: 'Doe'
+                firstName: 'John'
+                middleName: 'X'
+                nickName: 'Johnny'
+                gradeLevel: '10'
+                graduationYear: 2025
+                sites:
+                  - internalId: 500
+                    guid: '2699c407-5cac-4d64-a7e6-d05051c14ebb'
+                    name: 'Lincoln Elementary School'
+                    shortName: 'LES'
+                    primarySite: true
+                    status: 'Active'
+                    patronBarcode: 'P 555'
+                    acceptableUsePolicyOnFile: true
+                    cardExpires: '2018-02-27T13:00:00.0Z'
+                    patronType: 
+                      id: 150
+                      name: 'Student'
+                    homeroom:
+                      id: 200
+                      name: 'Mr. A'
+                  - internalId: 600
+                    guid: 'ec05a835-951a-4d23-ac3e-56e75c8522a6'
+                    name: 'Jefferson Elementary School'
+                    shortName: 'JES'
+                    primarySite: false
+                    status: 'Inactive'
+                    patronBarcode: 'P 410'
+                    acceptableUsePolicyOnFile: false
+                    cardExpires: '2015-3-22T13:00:00.0Z'
+                    patronType: 
+                      id: 20
+                      name: 'Student'
+                    homeroom:
+                      id: 250
+                      name: 'Mr. B'
+                itemsOut:
+                  - id: 100
+                    collectionType: 'library'
+                    barcode: 'T 1'
+                    callNumber: 'REF'
+                    site:
+                      internalId: 500
+                      guid: '2699c407-5cac-4d64-a7e6-d05051c14ebb'
+                      name: 'Lincoln Elementary School'
+                      shortName: 'LES'
+                    bib:
+                      internalId: 600
+                      title: 'Harry Potter'
+                      isbns:
+                        - '978-0-6050-3907-0'
+                        - '978-1-7811-0013-4'
+                      materialType: 'BOOK'
+                    notes:
+                      - id: 30
+                        text: 'Ripped cover'
+                        urgent: false
+                    price:
+                      amount: 15.55
+                      currencyUnit: 'USD'
+                    replacementPrice:
+                      amount: 14.00
+                      currencyUnit: 'USD'
+                    temporary: false
+                    consumable: false
+                    dateDue: '2020-10-21T13:00:00.0Z'
+                  - id: 101
+                    collectionType: 'resource'
+                    barcode: '00000000005671'
+                    site:
+                      internalId: 600
+                      guid: 'ec05a835-951a-4d23-ac3e-56e75c8522a6'
+                      name: 'Jefferson Elementary School'
+                      shortName: 'JES'
+                    resourceType:
+                      id: 10
+                      name: 'Computers'                      
+                    bib:
+                      internalId: 601
+                      title: 'Chromebook'
+                      materialType: 'EQUIPMENT'
+                    container:
+                      id: 1500
+                      name: 'Chromebook Cart'
+                      barcode: '10000000874653'
+                    class:
+                      id: 120
+                      name: 'Math'
+                      catalogDesignation: 'MAT 101'
+                      section:
+                        id: 10
+                        name: 'Math'
+                        catalogSuffix: '105'
+                        period: 6
+                        teacher:
+                          internalId: 12
+                          lastName: 'Smith'
+                          firstName: 'Tim'
+                    notes:
+                      - id: 25
+                        text: 'Make sure power cord is present'
+                        urgent: true
+                      - id: 30
+                        text: 'Broken enter key'
+                        urgent: false
+                    price:
+                      amount: 90.00
+                      currencyUnit: 'USD'
+                    replacementPrice:
+                      amount: 95.00
+                      currencyUnit: 'USD'
+                    consumable: false
+                    dateDue: '2020-10-21T13:00:00.0Z'
+        '400':
+          description: 'The query parameter has an invalid value'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_BAD_REQUEST
+                  message: '''material'' is an invalid value for collectionType'
+                  target: 'collectionType'
+        '401':
+          description: 'The access token is invalid, expired, or missing.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given resources permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: CatAssetSearchAssets
+        '404':
+          description: 'The patronId was not found.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_NOT_FOUND
+                  message: 'Could not find patron with id: ''500'''
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: 'error-model.yaml#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+  '/sites/{siteId}/circulation/patrons/{id}/status':
+    get:
+      summary: Get patron checkouts
+      description: >-
+        Get checkouts for a patron at a particular site.
+      operationId: getPatronCheckoutsAtSite
+      tags:
+        - circulations
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The identifier used to lookup the site.  This can be either the "guid" or the "internalId"
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: >-
+            The identifier used to lookup the patron.  This can be either the "districtId", "guid" or the "internalId"
+          required: true
+          schema:
+            type: string
+        - name: collectionType
+          in: query
+          description: >-
+            Limits results to a specific collection type (library, resource)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            The requested information was successfully obtained.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatronCheckouts'
+              example:
+                internalId: 1
+                guid: '656d370b-4fd8-41a2-958e-cf8176bb29a4'
+                districtId: '100'
+                lastName: 'Doe'
+                firstName: 'John'
+                middleName: 'X'
+                nickName: 'Johnny'
+                gradeLevel: '10'
+                graduationYear: 2025
+                sites:
+                  - internalId: 500
+                    guid: '2699c407-5cac-4d64-a7e6-d05051c14ebb'
+                    name: 'Lincoln Elementary School'
+                    shortName: 'LES'
+                    primarySite: true
+                    status: 'Active'
+                    patronBarcode: 'P 555'
+                    acceptableUsePolicyOnFile: true
+                    cardExpires: '2018-02-27T13:00:00.0Z'
+                    patronType: 
+                      id: 150
+                      name: 'Student'
+                    homeroom:
+                      id: 200
+                      name: 'Mr. A'
+                itemsOut:
+                  - id: 100
+                    collectionType: 'library'
+                    barcode: 'T 1'
+                    callNumber: 'REF'
+                    site:
+                      internalId: 500
+                      guid: '2699c407-5cac-4d64-a7e6-d05051c14ebb'
+                      name: 'Lincoln Elementary School'
+                      shortName: 'LES'
+                    bib:
+                      internalId: 600
+                      title: 'Harry Potter'
+                      isbns:
+                        - '978-0-6050-3907-0'
+                        - '978-1-7811-0013-4'
+                      materialType: 'BOOK'
+                    notes:
+                      - id: 30
+                        text: 'Ripped cover'
+                        urgent: false
+                    price:
+                      amount: 15.55
+                      currencyUnit: 'USD'
+                    replacementPrice:
+                      amount: 14.00
+                      currencyUnit: 'USD'
+                    temporary: false
+                    consumable: false
+                    dateDue: '2020-10-21T13:00:00.0Z'
+        '400':
+          description: 'The query parameter has an invalid value'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_BAD_REQUEST
+                  message: '''material'' is an invalid value for collectionType'
+                  target: 'collectionType'
+        '401':
+          description: 'The access token is invalid, expired, or missing.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_MISSING_INVALID_ACCESS_TOKEN
+                  message: 'Access token is missing or invalid'
+                  target: accessToken
+        '403':
+          description: >-
+            Insufficient permissions to make this API call.  Make sure the Destiny Administrator has given resources permissions to the application and/or user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INSUFFICIENT_RIGHTS_TO_API
+                  message: 'Insufficient permissions to access API'
+                  target: CatAssetSearchAssets
+        '404':
+          description: 'The patronId or siteId was not found.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_NOT_FOUND
+                  message: 'Could not find patron with id: ''500'''
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: 'error-model.yaml#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+components:
+  securitySchemes:
+    authHeader:
+      description: 'Put the "accessToken" in the "Authorization" bearer header'
+      type: http
+      scheme: bearer
+    accessToken:
+      description: 'Put the "accessToken" in a query parameter'
+      type: apiKey
+      name: accessToken
+      in: query
+  schemas:
+    PatronCheckouts:
+      properties:
+        internalId: 
+          type: integer
+          description: 'This identifies the patron in the database.'
+        guid: 
+          type: string
+          description: 'This uniquely identifies the patron in the database.'
+        districtId: 
+          type: string
+          description: 'This identifies the patron across the district.'
+        lastName: 
+          type: string
+          description: 'Last name of the patron.'
+        firstName: 
+          type: string
+          description: 'First name of the patron.'
+        middleName: 
+          type: string
+          description: 'Middle name of the patron.'
+        nickName: 
+          type: string
+          description: 'Nickname of the patron.'
+        gradeLevel: 
+          type: string
+          description: 'Grade level of the patron.'
+        graduationYear: 
+          type: integer
+          description: 'Graduation year of the patron.'
+        sites: 
+          $ref: '#/components/schemas/Sites'
+        itemsOut:
+          $ref: '#/components/schemas/ItemsOut'
+
+          
+    Sites:      
+      type: array
+      items:
+        type: object
+        properties:
+          internalId:
+            type: integer     
+            description: 'This identifies the site in the database.'
+          guid: 
+            type: string
+            description: 'This identifies the site in the database.'
+          name:
+            type: string
+            description: 'Name of the site.'
+          shortName:
+            type: string
+            description: 'Short name of the site.'
+          primarySite:
+            type: boolean
+            description: 'Indicates if this is the patron''s primary site.'
+          status:
+            type: string
+            description: 'Patron''s status at this site.'
+            enum: ['Active', 'Inactive', 'Restricted']
+          patronBarcode:
+            type: string
+            description: 'Barcode of the patron at this site.'
+          acceptableUsePolicyOnFile:
+            type: boolean
+            description: 'Indicates if the patron has their acceptable use policy on file at this site.'
+          cardExpires:
+            type: string
+            description: 'Date of expiration for the patron''s card.'
+          patronType:
+            description: 'Patron type at this site.'
+            type: object
+            properties:
+              id:
+                type: integer
+                description: 'Identifier of the patron type in the database.'
+              name:
+                type: string
+                description: 'Name of the patron type.'
+          homeroom:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: 'Identifier of the homeroom in the database.'
+              name:
+                type: string
+                description: 'Name of the homeroom type.'
+                
+    ItemsOut:      
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer     
+            description: 'This identifies the item in the database.'
+          collectionType:
+            type: string
+            enum: ['library', 'resource']
+            description: 'This is the type of item.'
+          barcode: 
+            type: string
+            description: 'Barcode of the item.'
+          callNumber:
+            type: string
+            description: 'Call number of the item.'
+          site:
+            type: object
+            properties:
+              internalId:
+                type: integer     
+                description: 'This identifies the site in the database.'
+              guid: 
+                type: string
+                description: 'This identifies the site in the database.'
+              name:
+                type: string
+                description: 'Name of the site.'
+              shortName:
+                type: string
+                description: 'Short name of the site.' 
+          resourceType:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: 'Identifier of the resource type in the database.'
+              name:
+                type: string
+                description: 'Name of the resource type.'
+          bib:
+            type: object
+            properties:
+              internalId:
+                type: integer
+                description: 'Identifier of the bib in the database.'
+              title:
+                type: string
+                description: 'Title of the bib.'
+              isbns:
+                type: array
+                items:
+                  type: string
+                  description: "ISBNs of the bib."
+              materialType:
+                type: string
+                description: 'The material type of the bib.'
+                enum: 
+                  - BOOK
+                  - COMPUTER_FILE
+                  - EQUIPMENT
+                  - FILM
+                  - FOLLETT_AUDIO_BOOK
+                  - FOLLETT_EBOOK
+                  - GENERIC_AUDIO_BOOK
+                  - GENERIC_EBOOK
+                  - GRAPHIC
+                  - INTERACTIVE_BOOK
+                  - KIT
+                  - LANGUAGE
+                  - LIGHTBOX
+                  - MAP
+                  - MIXED
+                  - MUSIC
+                  - MUSICAL_RECORDING
+                  - NON_MUSICAL_RECORDING
+                  - OBJECT
+                  - SERIAL
+          container:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: 'Identifier of the container in the database.'
+              name:
+                type: string
+                description: 'Name of the container.'
+              barcode:
+                type: string
+                description: "Barcode of the container."
+          class:
+            type: object
+            properties:
+              id:
+                type: integer     
+                description: 'This identifies the class in the database.'
+              name:
+                type: string
+                description: 'Name of the class.'
+              catalogDesignation:
+                type: string
+                description: 'Catalog designation of the class.'
+              section:
+                type: object
+                properties:
+                  id:
+                    type: integer     
+                    description: 'This identifies the section in the database.'
+                  name:
+                    type: string
+                    description: 'Name of the section.'
+                  catalogSuffix:
+                    type: string
+                    description: 'Suffix of the section in the catalog.'
+                  period: 
+                    type: number
+                    description: 'Period of the section.'
+                  teacher:
+                    type: object
+                    properties:
+                      internalId: 
+                        type: integer
+                        description: 'This identifies the teacher in the database.'
+                      lastName: 
+                        type: string
+                        description: 'Last name of the teacher.'
+                      firstName: 
+                        type: string
+                        description: 'First name of the teacher.'
+          notes:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer     
+                  description: 'This identifies the note in the database.'
+                text:
+                  type: string
+                  description: 'Contents of the note.'
+                urgent:
+                  type: boolean
+                  description: 'This indicates if the note is urgent.'  
+          price:
+            type: object
+            properties:
+              amount:
+                type: number
+                description: 'This is the price of the item.'
+              currencyUnit:
+                type: string
+                description: 'This is a three digit code identifying what currency was used to assess the item.'
+          replacementPrice:
+            type: object
+            properties:
+              amount:
+                type: number
+                description: 'This is the replacement price of the item.'
+              currencyUnit:
+                type: string
+                description: 'This is a three digit code identifying what currency was used to assess the item.'
+          temporary:
+            type: boolean
+            description: 'This indicates if the item is temporary.'
+          consumable:
+            type: boolean
+            description: 'This indicates if the item is consumable.'
+          dateDue:
+            type: string
+            description: 'This is the due date of the item.'
+            
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        error:
+          type: object
+          properties: 
+            code:
+              type: string
+              description: 'Identifies the type of errors that could happen when calling this API.'
+              enum: 
+                - CODE_MISSING_TOKEN
+                - CODE_INVALID_TOKEN
+                - CODE_EXPIRED_TOKEN                
+                - CODE_UNKNOWN_APPID
+                - CODE_CONTEXT_NOT_FOUND
+                - CODE_CONTEXT_REQUIRED_IN_CONSORTIUM
+                - CODE_INVALID_PATH
+                - CODE_INSUFFICIENT_RIGHTS_TO_API
+                - CODE_NOT_FOUND
+                - CODE_BAD_REQUEST
+            message:
+              type: string
+              description: 'A human readable message about the error.'
+            target:
+              type: string
+              description: 'Field, parameter or path associated with the error.'
+            logId:
+              type: string
+              description: 'A unique value generated and written to the Destiny log file in association with the error.'

@@ -1,0 +1,268 @@
+openapi: 3.0.0
+info:
+  version: 1.1.0
+  title: Destiny API -- Patrons
+servers:
+  - url: '/api/v{apiVersion}/rest/context/{contextName}'
+    variables: 
+      apiVersion: 
+        default: '1'
+        description: Major version
+      contextName: 
+        default: destiny
+        description: >-
+          This identifies which Destiny district needs to be accessed.  If the
+          Destiny server being accessed does not host multiple districts, the
+          value for this can be set to "destiny"
+  - url: '/api/v{apiVersion}/rest'
+    variables: 
+      apiVersion: 
+        default: '1'
+        description: Major version of the API being used
+paths:
+  '/patrons/{id}':
+    get:
+      summary: Lookup a patron in the district
+      description: >-
+        Lookup a patron across the district.  
+
+      operationId: getPatronAtDistrict
+      tags:
+        - patrons
+      parameters:
+        - name: id
+          in: path
+          description: >-
+            The identifier used to lookup the patron.  This can be either the "guid" or the "internalId"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Information about the patron
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patron'
+              example:
+                guid: '6e0bb840-c9c9-4b99-b038-13c970a6bfec'
+                internalId: 207
+                districtId: '2021-345'
+                lastName: 'Doe'
+                firstName: 'John'
+                middleName: 'Alexander'
+                nickName: 'John'
+                gradeLevel: '5'
+                siteAssociations:
+                  - siteGuid: '32ef328d-0016-4625-82fa-d497e8e942f0'
+                    siteId: 101
+                    barcode: 'P 101'
+                    primarySite: true
+                    homeRoom: 'Room 243'
+                    type: 'Student'
+                    teacher: false
+                    status: 'active'
+                  - siteGuid: '24fb5314-7a5c-437b-a353-314d5c166b6f'
+                    siteId: 201
+                    barcode: '320483947855241'
+                    primarySite: false
+                    type: 'Student'
+                    teacher: false
+                    status: 'inactive'
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: INVALID_ACCESS_TOKEN
+                  message: Access token is missing or invalid
+                  target: accessToken
+        '404':
+          description: 'The patron could not be found using the given identifier'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: NOT_FOUND
+                  message: Patron not found
+
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: BaseException
+                  message: Something bad happened in the server
+                  logId: kxEtz
+
+  '/sites/{siteId}/patrons/{id}':
+    get:
+      summary: Lookup a patron at a specific site
+      description: >-
+        Lookup a patron at a specific site
+      operationId: getPatron
+      tags:
+        - patrons
+      parameters:
+        - name: siteId
+          in: path
+          description: >-
+            The identifier used to lookup the site.  This can be either the "guid" or the "internalId"
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: >-
+            The identifier used to lookup the patron at the given site.  This can be either the "guid" or the "internalId"
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Information about the patron at the given site
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patron'
+              example:
+                guid: 6e0bb840-c9c9-4b99-b038-13c970a6bfec
+                internalId: 207
+                districtId: '2021-345'
+                lastName: 'Smith'
+                firstName: 'Jane'
+                nickName: 'Jane'
+                siteAssociations:
+                  - siteGuid: '32ef328d-0016-4625-82fa-d497e8e942f0'
+                    siteId: 1321
+                    barcode: 'P 101'
+                    primarySite: true
+                    homeRoom: 'Room 243'
+                    type: 'Student'
+                    teacher: false
+                    status: 'active'
+                    resourceTemplate:
+                      internalId: 674
+                      name: Textbooks
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INVALID_ACCESS_TOKEN
+                  message: Access token is missing or invalid
+                  target: accessToken   
+                  logId: kxEtz
+        '404':
+          description: 'The patron could not be found at the given site using the given identifier'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_NOT_FOUND
+                  message: Patron not found
+
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: CODE_INTERNAL_SERVER_ERROR
+                  message: Something bad happened in the server
+                  logId: kxEtz
+
+components:
+  securitySchemes:
+    authHeader:
+      description: Put the "accessToken" in the "Authorization" bearer header
+      type: http
+      scheme: bearer
+    accessToken:
+      description: Put the "accessToken" in a query parameter
+      type: apiKey
+      name: accessToken
+      in: query
+  schemas:
+    Patron:
+      properties:
+        guid:
+          type: string
+        internalId:
+          type: integer
+        districtId:
+          type: string
+        lastName:
+          type: string
+        firstName:
+          type: string
+        middleName:
+          type: string
+        nickName:
+          type: string
+        gradeLevel:
+          type: string
+        siteAssociations:
+          type: array
+          items:
+            type: object
+            properties:
+              siteId:
+                type: integer              
+              siteGuid: 
+                type: string
+              type:
+                type: string
+              barcode:
+                type: string
+              primarySite:
+                type: boolean
+              teacher:
+                type: boolean
+              homeRoom:
+                type: string
+              resourceTemplate:
+                type: object
+                properties:
+                  internalId:
+                    type: integer
+                  name:
+                    type: string
+              status:
+                type: string
+                enum: ['active', 'inactive', 'restricted']
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        error:
+          type: object
+          properties: 
+            code:
+              type: string
+              title: Identifies the type of errors that could happen when calling this API
+              enum: [CODE_MISSING_ACCESS_TOKEN, CODE_INVALID_ACCESS_TOKEN, CODE_EXPIRED_TOKEN, CODE_UNKNOWN_APPID, CODE_INSUFFICIENT_RIGHTS_TO_API, CODE_INTERNAL_SERVER_ERROR, CODE_NOT_FOUND]
+            message:
+              type: string
+            target:
+              type: string
+            logId:
+              type: string                

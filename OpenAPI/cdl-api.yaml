@@ -1,0 +1,1749 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Destiny API -- CDL
+servers:
+  - url: '/api/v{apiVersion}/rest/context/{contextName}/cdl'
+    variables: 
+      apiVersion: 
+        default: '1'
+        description: Major version
+      contextName: 
+        default: destiny
+        description: >-
+          This identifies which Destiny district needs to be accessed.  If the
+          Destiny server being accessed does not host multiple districts, the
+          value for this can be set to "destiny"
+  - url: '/api/v{apiVersion}/rest/cdl'
+    variables: 
+      apiVersion: 
+        default: '1'
+        description: 'Major version of the API being used'
+paths:
+  '/tenants':
+    get:
+      summary: 'Get tenant list'
+      description: >-
+        Get list of tenants.
+      operationId: getTenants
+      tags:
+        - Tenants
+      responses:
+        '200':
+          description: >-
+            Information about the tenants
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantsVO'
+              example:
+                tenants:
+                  - tenantID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                    tenantDomain: tenant_domain
+                    displayableName: Tenant Name
+                  - tenantID: '01234567-89ab-cdef-0123-F456789ABCDE'
+                    tenantDomain: tenant_domain2
+                    displayableName: Tenant Name2
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+  '/tenants/{tenantID}':
+    get:
+      summary: 'Get tenant info'
+      description: >-
+        Get information of tenant.
+      operationId: getTenant
+      tags:
+        - Tenants
+      parameters:
+        - name: tenantID
+          in: path
+          description: >-
+            The tenant to access.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Information about the tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantVO'
+              example:
+                tenantID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                tenantDomain: tenant_domain
+                displayableName: Tenant Name
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the resource is missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Resource is missing
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+    put:
+      summary: 'Update tenant info'
+      description: >-
+        Update information of tenant.
+      operationId: putTenant
+      tags:
+        - Tenants
+      parameters:
+        - name: tenantID
+          in: path
+          description: >-
+            The tenant to create/update.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: 'Object data containing information needed to place the tenant'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantVO'
+            example:
+                tenantID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                tenantDomain: tenant_domain
+                displayableName: Tenant Name
+      responses:
+        '201':
+          description: >-
+            Tenant was created
+        '204':
+          description: >-
+            Tenant was updated
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the resource is missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Resource is missing
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+  '/tenants/{tenantID}/libraries':
+    get:
+      summary: 'Get site tenant list'
+      description: >-
+        Get list of site tenants.
+      operationId: getSiteTenants
+      tags:
+        - SiteTenants
+      parameters:
+        - name: tenantID
+          in: path
+          description: >-
+            The tenant to access.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Information about the site tenants
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteTenantsVO'
+              example:
+                siteTenants:
+                  - siteGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                  - siteGUID: '01234567-89ab-cdef-0123-F456789ABCDE'
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the resource is missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Resource is missing
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+  '/tenants/{tenantID}/libraries/{siteGUID}':
+    get:
+      summary: 'Get site tenant info'
+      description: >-
+        Get information of site tenant.
+      operationId: getSiteTenant
+      tags:
+        - SiteTenants
+      parameters:
+        - name: tenantID
+          in: path
+          description: >-
+            The tenant to access.
+          required: true
+          schema:
+            type: string
+        - name: siteGUID
+          in: path
+          description: >-
+            The site to access.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Information about the tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteTenantVO'
+              example:
+                siteGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the resource is missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Resource is missing
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+    put:
+      summary: 'Update site tenant info'
+      description: >-
+        Update information of site tenant.
+      operationId: putSiteTenant
+      tags:
+        - SiteTenants
+      parameters:
+        - name: tenantID
+          in: path
+          description: >-
+            The tenant to access.
+          required: true
+          schema:
+            type: string
+        - name: siteGUID
+          in: path
+          description: >-
+            The site to create/update.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: 'Object data containing information needed to place the site tenant'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteTenantVO'
+            example:
+                siteGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+      responses:
+        '201':
+          description: >-
+            Site Tenant was created
+        '204':
+          description: >-
+            Site Tenant was updated
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the resource is missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Resource is missing
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+  '/tenants/{tenantID}/libraries/{siteGUID}/processingneeded':
+    put:
+      summary: 'Update site processing needed flag'
+      description: >-
+        Update site processing needed flag.
+      operationId: putProcessingNeeded
+      tags:
+        - SiteTenants
+      parameters:
+        - name: tenantID
+          in: path
+          description: >-
+            The tenant to access.
+          required: true
+          schema:
+            type: string
+        - name: siteGUID
+          in: path
+          description: >-
+            The site to access.
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          description: >-
+            The state to set the flag to.
+          required: true
+          schema:
+            type: boolean
+      responses:
+        '204':
+          description: >-
+            Processing Needed flag was updated
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the resource is missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Resource is missing
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+  '/tenants/{tenantID}/loans':
+    get:
+      summary: 'Get tenant list of loans'
+      description: >-
+        Get list of loans.
+      operationId: getLoans
+      tags:
+        - Loans
+      parameters:
+        - name: tenantID
+          in: path
+          description: >-
+            The tenant to access.
+          required: true
+          schema:
+            type: string
+        - name: siteGUID
+          in: query
+          description: >-
+            The site to access.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Information about the loans
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinyLoansVO'
+              example:
+                destinyLoans:
+                  - loanID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                    tenantID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                    siteGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                    submitterUserGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                    patronGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                    loanStatus: SHIPPED
+                    providingLibrary:
+                      districtShortName: dsn
+                      siteShortName: ssn
+                    title:
+                      materialType: BOOK
+                      title: Title 1
+                      sortableTitle: STitle 1
+                      publisher: Pub 1
+                      sortablePublisher: SPub 1
+                    copy:
+                      callNumber: callNum
+                      sortableCallNumber: sortableCallNum
+                      copyBarcode: BARCODE1
+                      sortableCopyBarcode: BARCODE1
+                  - loanID: '01234567-89ab-cdef-0123-F456789ABCDE'
+                    tenantID: '01234567-89ab-cdef-0123-F456789ABCDE'
+                    siteGUID: '01234567-89ab-cdef-0123-F456789ABCDE'
+                    submitterUserGUID: '01234567-89ab-cdef-0123-F456789ABCDE'
+                    patronGUID: '01234567-89ab-cdef-0123-F456789ABCDE'
+                    loanStatus: APPROVED
+                    providingLibrary:
+                      districtShortName: dsn
+                      siteShortName: ssn
+                    title:
+                      materialType: BOOK
+                      title: Title 2
+                      sortableTitle: STitle 2
+                      publisher: Pub 2
+                      sortablePublisher: SPub 2
+                    copy:
+                      callNumber: callNum
+                      sortableCallNumber: sortableCallNum
+                      copyBarcode: BARCODE2
+                      sortableCopyBarcode: BARCODE2
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the resource is missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Resource is missing
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+  '/tenants/{tenantID}/loans/{loanID}':
+    get:
+      summary: 'Get loan info'
+      description: >-
+        Get information of loan.
+      operationId: getLoan
+      tags:
+        - Loans
+      parameters:
+        - name: tenantID
+          in: path
+          description: >-
+            The tenant to access.
+          required: true
+          schema:
+            type: string
+        - name: loanID
+          in: path
+          description: >-
+            The loan to access.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Information about the loan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinyLoanVO'
+              example:
+                loanID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                tenantID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                siteGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                submitterUserGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                patronGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                loanStatus: SHIPPED
+                providingLibrary:
+                  districtShortName: dsn
+                  siteShortName: ssn
+                title:
+                  materialType: BOOK
+                  title: Title 1
+                  sortableTitle: STitle 1
+                  publisher: Pub 1
+                  sortablePublisher: SPub 1
+                copy:
+                  callNumber: callNum
+                  sortableCallNumber: sortableCallNum
+                  copyBarcode: BARCODE1
+                  sortableCopyBarcode: BARCODE1
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the resource is missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Resource is missing
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+    put:
+      summary: 'Update loan info'
+      description: >-
+        Update information of loan.
+      operationId: putLoan
+      tags:
+        - Loans
+      parameters:
+        - name: tenantID
+          in: path
+          description: >-
+            The tenant to access.
+          required: true
+          schema:
+            type: string
+        - name: loanID
+          in: path
+          description: >-
+            The loan to create/update.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: 'Object data containing information needed to place the loan'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DestinyLoanVO'
+            example:
+                loanID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                tenantID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                siteGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                submitterUserGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                patronGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                loanStatus: SHIPPED
+                providingLibrary:
+                  districtShortName: dsn
+                  siteShortName: ssn
+                title:
+                  materialType: BOOK
+                  title: Title 1
+                  sortableTitle: STitle 1
+                  publisher: Pub 1
+                  sortablePublisher: SPub 1
+                copy:
+                  callNumber: callNum
+                  sortableCallNumber: sortableCallNum
+                  copyBarcode: BARCODE1
+                  sortableCopyBarcode: BARCODE1
+                studentRequestID: 123
+      responses:
+        '201':
+          description: >-
+            Loan was created
+        '204':
+          description: >-
+            Loan was updated
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the resource is missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Resource is missing
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+  '/tenants/{tenantID}/loanrequests':
+    get:
+      summary: 'Get tenant list of loan requests'
+      description: >-
+        Get list of loan requests.
+      operationId: getLoanRequests
+      tags:
+        - LoanRequests
+      parameters:
+        - name: tenantID
+          in: path
+          description: >-
+            The tenant to access.
+          required: true
+          schema:
+            type: string
+        - name: siteGUID
+          in: query
+          description: >-
+            The site to access.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Information about the loan requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinyLoanRequestsVO'
+              example:
+                destinyLoanRequests:
+                  - loanID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                    tenantID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                    siteGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                    loanStatus: SHIPPED
+                    requester:
+                      districtShortName: dsn
+                      siteShortName: ssn
+                    bibID: 100
+                  - loanID: '01234567-89ab-cdef-0123-F456789ABCDE'
+                    tenantID: '01234567-89ab-cdef-0123-F456789ABCDE'
+                    siteGUID: '01234567-89ab-cdef-0123-F456789ABCDE'
+                    loanStatus: APPROVED
+                    requester:
+                      districtShortName: dsn
+                      siteShortName: ssn
+                    bibID: 101
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the resource is missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Resource is missing
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+  '/tenants/{tenantID}/loanrequests/{loanID}':
+    get:
+      summary: 'Get loan request info'
+      description: >-
+        Get information of loan request.
+      operationId: getLoanRequest
+      tags:
+        - LoanRequests
+      parameters:
+        - name: tenantID
+          in: path
+          description: >-
+            The tenant to access.
+          required: true
+          schema:
+            type: string
+        - name: loanID
+          in: path
+          description: >-
+            The loan request to access.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Information about the loan request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DestinyLoanRequestVO'
+              example:
+                loanID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                tenantID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                siteGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                loanStatus: SHIPPED
+                requester:
+                  districtShortName: dsn
+                  siteShortName: ssn
+                bibID: 100
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the resource is missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Resource is missing
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+    put:
+      summary: 'Update loan request info'
+      description: >-
+        Update information of loan request.
+      operationId: putLoanRequest
+      tags:
+        - LoanRequests
+      parameters:
+        - name: tenantID
+          in: path
+          description: >-
+            The tenant to access.
+          required: true
+          schema:
+            type: string
+        - name: loanID
+          in: path
+          description: >-
+            The loan request to create/update.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: 'Object data containing information needed to place the loan request'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DestinyLoanRequestVO'
+            example:
+                loanID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                tenantID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                siteGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                loanStatus: SHIPPED
+                requester:
+                  districtShortName: dsn
+                  siteShortName: ssn
+                bibID: 100
+      responses:
+        '201':
+          description: >-
+            Loan request was created
+        '204':
+          description: >-
+            Loan request was updated
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the resource is missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Resource is missing
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+  '/tenants/{tenantID}/search':
+    get:
+      summary: 'Get search results'
+      description: >-
+        Get list of search results.
+      operationId: doSearch
+      tags:
+        - Search
+      parameters:
+        - name: tenantID
+          in: path
+          description: >-
+            The tenant to access.
+          required: true
+          schema:
+            type: string
+        - name: keywords
+          in: query
+          description: >-
+            The keywords to search.
+          required: false
+          schema:
+            type: string
+        - name: isbn
+          in: query
+          description: >-
+            The ISBN to search.
+          required: false
+          schema:
+            type: string
+        - name: bibID
+          in: query
+          description: >-
+            The bibID to search.
+          required: false
+          schema:
+            type: integer
+        - name: ddSearch
+          in: query
+          description: >-
+            If the search request is originating from Destiny Discover. Can only be used with keyword search.
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: skipSubjects
+          in: query
+          description: >-
+            Do not return subjects with results. Can only be used when ddSearch is true.
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: maxResults
+          in: query
+          description: >-
+            Maximum number of search results to return
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: >-
+            Information about the search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResultsVO'
+              example:
+                searchResults:
+                  - title:
+                      materialType: 'BOOK'
+                      materialTypeForDD: 75
+                      title: 'Title 1'
+                      sortableTitle: 'TITLE 0000000001'
+                      author: 'Author'
+                      sortableAuthor: 'AUTHOR'
+                      publisher: 'Publisher'
+                      sortablePublisher: 'PUBLISHER'
+                      isbn: '012-3-4567-8901-2'
+                      publicationYear: '2020'
+                      interestGradeLevel: 'K-3'
+                      readingGradeLevel: '2.1'
+                      summary: 'Title 1 summary'
+                      status: 'OUT'
+                      subjects:
+                        - displayKey: 'Cats'
+                          searchKey: 'CATS'
+                        - displayKey: 'Animals'
+                          searchKey: 'ANIMALS'
+                    dedupKey: 'BOOK|TITLE 0000000001|AUTHOR|PUBLISHER'
+                    holdings:
+                      - siteGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                        bibID: 100
+                        totalCopies: 1
+                        availableCopies: 0
+                    relevance: 1000.0
+                  - title:
+                      materialType: 'BOOK'
+                      title: 'Title 2'
+                      sortableTitle: 'TITLE 0000000002'
+                      author: 'Author2'
+                      sortableAuthor: 'AUTHOR0000000002'
+                      isbn: '0123456789'
+                      status: 'IN'
+                      subjects:
+                        - displayKey: 'Cooking'
+                          searchKey: 'COOKING'
+                        - displayKey: 'International 1'
+                          searchKey: 'INTERNATIONAL 0000000001'
+                    dedupKey: 'BOOK|TITLE 0000000002|AUTHOR0000000002|'
+                    holdings:
+                      - siteGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                        bibID: 101
+                        totalCopies: 1
+                        availableCopies: 1
+                    relevance: 900.0
+                numResults: 2
+                appID: destiny-ABCD-EFGH
+                durationMillis: 100
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the resource is missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Resource is missing
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+  '/tenants/{tenantID}/searchdedupekey':
+    get:
+      summary: 'Get search results based on dedupeKey'
+      description: >-
+        Get list of search results based on dedupeKey.
+      operationId: doSearchByDedupeKey
+      tags:
+        - Search
+      parameters:
+        - name: tenantID
+          in: path
+          description: >-
+            The tenant to access.
+          required: true
+          schema:
+            type: string
+        - name: dedupekey
+          in: query
+          description: >-
+            The dedupeKey to search.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            Information about the search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResultsVO'
+              example:
+                searchResults:
+                  - title:
+                      materialType: 'BOOK'
+                      title: 'Title 1'
+                      sortableTitle: 'TITLE 0000000001'
+                      author: 'Author'
+                      sortableAuthor: 'AUTHOR'
+                      publisher: 'Publisher'
+                      sortablePublisher: 'PUBLISHER'
+                      isbn: '012-3-4567-8901-2'
+                      publicationYear: '2020'
+                      interestGradeLevel: 'K-3'
+                      readingGradeLevel: '2.1'
+                      summary: 'Title 1 summary'
+                      status: 'OUT'
+                    dedupKey: 'BOOK|TITLE 0000000001|AUTHOR|PUBLISHER'
+                    holdings:
+                      - siteGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                        bibID: 100
+                        totalCopies: 1
+                        availableCopies: 0
+                    relevance: 1000.0
+                  - title:
+                      materialType: 'BOOK'
+                      title: 'Title 2'
+                      sortableTitle: 'TITLE 0000000002'
+                      author: 'Author2'
+                      sortableAuthor: 'AUTHOR0000000002'
+                      isbn: '0123456789'
+                      status: 'IN'
+                    dedupKey: 'BOOK|TITLE 0000000002|AUTHOR0000000002|'
+                    holdings:
+                      - siteGUID: '01234567-89ab-cdef-0123-456789ABCDEF'
+                        bibID: 101
+                        totalCopies: 1
+                        availableCopies: 1
+                    relevance: 900.0
+                numResults: 2
+                appID: destiny-ABCD-EFGH
+                durationMillis: 100
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the district info cannot be fetched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Unknown error fetching district info
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+  '/libraries/{siteGUID}/titles/{bibID}/details':
+    get:
+      summary: 'Get call numbers'
+      description: >-
+        Get list of call numbers.
+      operationId: getCallNumbers
+      tags:
+        - Details
+      parameters:
+        - name: siteGUID
+          in: path
+          description: >-
+            The site to access.
+          required: true
+          schema:
+            type: string
+        - name: bibID
+          in: path
+          description: >-
+            The bibID to search.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: >-
+            Information about the title call numbers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CDLTitleDetailVO'
+              example:
+                siteGUID: 12345678-1234-1234-1234-123456789012
+                bibID: 100
+                callNumbers:
+                  - Call124
+                  - Call23r4
+                title:
+                  materialType: BOOK
+                  title: Title 1
+                  sortableTitle: STitle 1
+                  author: Author 1
+                  sortableAuthor: SAuthor 1
+                  publisher: Pub 1
+                  sortablePublisher: SPub 1
+                  isbn: exampleISBN
+        '400':
+          description: 'If the request is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_BAD_REQUEST
+                message: Missing or invalid param
+                target: params
+                logId: kxEtz
+        '404':
+          description: 'If the resource is missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CODE_NOT_FOUND
+                message: Resource is missing
+                target: resource
+                logId: kxEtz
+        '401':
+          description: 'If the access token is invalid, expired or missing'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: MISSING_INVALID_ACCESS_TOKEN
+                message: Access token is missing or invalid
+                target: accessToken
+                logId: kxEtz
+        '500':
+          description: This is an unexpected fault/error in the server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: BaseException
+                message: Something bad happened in the server
+                logId: kxEtz
+components:
+  securitySchemes:
+    authHeader:
+      description: Put the "accessToken" in the "Authorization" bearer header
+      type: http
+      scheme: bearer
+    accessToken:
+      description: Put the "accessToken" in a query parameter
+      type: apiKey
+      name: accessToken
+      in: query
+  schemas:
+    TenantsVO:
+      properties:
+        tenants:
+          type: array
+          description: 'An array of tenants'
+          items:
+            $ref: '#/components/schemas/TenantVO'
+    TenantVO:
+      properties:
+        tenantID:
+          type: string
+          description: 'Object id of the tenant'
+        tenantDomain:
+          type: string
+          description: 'Domain of the tenant'
+        displayableName:
+          type: string
+          description: 'Displayable name of the tenant'
+    SiteTenantsVO:
+      properties:
+        siteTenants:
+          type: array
+          description: 'An array of site tenants'
+          items:
+            $ref: '#/components/schemas/SiteTenantVO'
+    SiteTenantVO:
+      properties:
+        siteGUID:
+          type: string
+          description: 'Destiny GUID of the site'
+    DestinyLoansVO:
+      properties:
+        destinyLoans:
+          type: array
+          description: 'An array of destiny loans'
+          items:
+            $ref: '#/components/schemas/DestinyLoanVO'
+    DestinyLoanVO:
+      properties:
+        loanID:
+          type: string
+          description: 'Object id of the loan'
+        tenantID:
+          type: string
+          description: 'Object id of the tenant'
+        siteGUID:
+          type: string
+          description: 'Destiny GUID of the site'
+        submitterUserGUID:
+          type: string
+          description: 'Destiny GUID of the user'
+        patronGUID:
+          type: string
+          description: 'Destiny GUID of the patron'
+        loanStatus:
+          $ref: '#/components/schemas/LoanStatus'
+        providingLibrary:
+          $ref: '#/components/schemas/PartnerLibraryVO'
+        title:
+          $ref: '#/components/schemas/TitleInfoVO'
+        copy:
+          $ref: '#/components/schemas/CopyInfoVO'
+        studentRequestID:
+          type: integer
+          description: 'Id of the student''s request for the title, if applicable'
+    DestinyLoanRequestsVO:
+      properties:
+        destinyLoanRequests:
+          type: array
+          description: 'An array of destiny loan requests'
+          items:
+            $ref: '#/components/schemas/DestinyLoanRequestVO'
+    DestinyLoanRequestVO:
+      properties:
+        loanID:
+          type: string
+          description: 'Object id of the loan'
+        tenantID:
+          type: string
+          description: 'Object id of the tenant'
+        siteGUID:
+          type: string
+          description: 'Destiny GUID of the site'
+        loanStatus:
+          $ref: '#/components/schemas/LoanStatus'
+        requester:
+          $ref: '#/components/schemas/PartnerLibraryVO'
+        bibID:
+          type: integer
+          description: 'ID of requested bib'
+    PartnerLibraryVO:
+      properties:
+        districtShortName:
+          type: string
+          description: 'Short name of district'
+        siteShortName:
+          type: string
+          description: 'Short name of site'
+    TitleInfoVO:
+      properties:
+        materialType:
+          type: string
+          description: 'Material type'
+        materialTypeForDD:
+          type: integer
+          description: 'Material type for DD'
+        title:
+          type: string
+          description: 'Title of title'
+        sortableTitle:
+          type: string
+          description: 'Sortable title of title'
+        author:
+          type: string
+          description: 'Author of title'
+        sortableAuthor:
+          type: string
+          description: 'Sortable author of title'
+        publisher:
+          type: string
+          description: 'Publisher of title'
+        sortablePublisher:
+          type: string
+          description: 'Sortable publisher of title'
+        isbn:
+          type: string
+          description: 'ISBN of title'
+        publicationYear:
+          type: string
+          description: 'Publication year of title'
+        interestGradeLevel:
+          type: string
+          description: 'Interest grade level of title'
+        readingGradeLevel:
+          type: string
+          description: 'Reading grade level of title'
+        summary:
+          type: string
+          description: 'Summary note/description of title'
+        status:
+          type: string
+          description: 'Availability status of title across all districts'
+          enum: 
+            - IN
+            - OUT
+        subjects:
+          type: array
+          description: 'List of subjects associated with the title'
+          items:
+            $ref: '#/components/schemas/SubjectVO'
+    CopyInfoVO:
+      properties:
+        callNumber:
+          type: string
+          description: 'Call Number of copy'
+        sortableCallNumber:
+          type: string
+          description: 'Sortable Call Number of copy'
+        copyBarcode:
+          type: string
+          description: 'Barcode of copy'
+        sortableCopyBarcode:
+          type: string
+          description: 'Sortable Barcode of copy'
+    LoanStatus:
+      type: string
+      description: 'Loan Status'
+      enum: 
+        - PENDING
+        - APPROVED
+        - DECLINED
+        - SHIPPED
+        - RECEIVED
+        - CIRCULATED
+        - SHIPPED_FOR_RETURN
+        - RECEIVED_FOR_RETURN
+        - DELETED
+    SearchResultsVO:
+      properties:
+        searchResults:
+          type: array
+          description: 'An array of destiny search results'
+          items:
+            $ref: '#/components/schemas/SearchResultVO'
+        numResults:
+          type: integer
+          description: 'Number of search results'
+        appID:
+          type: string
+          description: 'AppID for District'
+    SearchResultVO:
+      properties:
+        title:
+          $ref: '#/components/schemas/TitleInfoVO'
+        dedupKey:
+          type: string
+          description: 'Key of title for deduping'
+        holdings:
+          type: array
+          description: 'Array of holdings for the title'
+          items:
+            $ref: '#/components/schemas/TitleHoldingsVO'
+        relevance:
+          type: number
+          description: 'Relevance of the search result'
+        durationMillis:
+          type: integer
+          description: 'Time it took to process the search'
+    TitleHoldingsVO:
+      properties:
+        siteGUID:
+          type: string
+          description: 'Destiny GUID of the site'
+        bibID:
+          type: integer
+          description: 'ID of requested bib'
+        totalCopies:
+          type: integer
+          description: 'Total number of copies'
+        availableCopies:
+          type: integer
+          description: 'Number of available copies'
+    CDLTitleDetailVO:
+      properties:
+        siteGUID:
+          type: string
+          description: 'Destiny GUID of the site'
+        bibID:
+          type: integer
+          description: 'ID of requested bib'
+        callNumbers:
+          type: array
+          description: 'List of available call numbers'
+          items:
+            type: string
+            description: 'Call number'
+        title:
+          $ref: '#/components/schemas/TitleInfoVO'
+    SubjectVO:
+      properties:
+        displayKey:
+          type: string
+          description: 'Displayable subject name'
+        searchKey:
+          type: string
+          description: 'Key of subject for deduping'
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        error: 
+          type: object
+          properties:           
+            code:
+              type: string
+              description: 'Identifies the type of errors that could happen when calling this API.'
+              enum: 
+                - CODE_MISSING_TOKEN
+                - CODE_INVALID_TOKEN
+                - CODE_EXPIRED_TOKEN                
+                - CODE_CONTEXT_NOT_FOUND
+                - CODE_CONTEXT_REQUIRED_IN_CONSORTIUM
+                - CODE_UNKNOWN_APPID
+                - CODE_UNAUTHORIZED_ACCESS
+                - CODE_BAD_REQUEST
+                - CODE_NOT_FOUND
+            message:
+              type: string
+              description: 'A human readable message about the error.'
+            target:
+              type: string
+              description: 'Field, parameter or path associated with the error'
+            logId:
+              type: string
+              description: 'A unique value generated and written to the Destiny log file in association with the error.'
