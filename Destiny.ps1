@@ -1,20 +1,29 @@
-. ./MyConfiguration.ps1
-$baseURL = "https://$Domain/api/v1/rest/context/$Context"
-function Get-DestinyAccessToken {
+Function Get-DestinyAccessToken {
     param(
-        [string]$clientId,
-        [string]$clientSecret
+        [Parameter(Mandatory=$true)]
+        [string]$Domain,
+        [Parameter(Mandatory=$true)]
+        [string]$ClientId,
+        [Parameter(Mandatory=$true)]
+        [string]$ClientSecret,
+        [string]$Context
     )
-    $url = "$baseURL/auth/accessToken"
-    $body = @{
-        grant_type = 'client_credentials'
-        client_id = $clientId
-        client_secret = $clientSecret
+    $Url = "https://$Domain/api/v1/rest"
+    if ($Context) {
+        $Url += "/context/$Context"
     }
-    $response = Invoke-RestMethod -Uri $url -Method Post -Body $body
-    return $response
+    $Url += "/auth/accessToken"
+    $Body = @{
+        grant_type = 'client_credentials'
+        client_id = $ClientId
+        client_secret = $ClientSecret
+    }
+    $Response = Invoke-RestMethod -Uri $Url -Method Post -Body $Body
+    $Response.PSObject.Properties.Add([PSNoteProperty]::new('expires',(Get-Date).AddSeconds([int]$Response.expires_in - 10)))
+    $Response.PSObject.Properties.Remove('expires_in')
+    return $Response
 }
-function Get-Patron {
+function Get-DestinyPatron {
     param (
         [string]$accessToken,
         [string]$id,
@@ -27,7 +36,7 @@ function Get-Patron {
     }
     Invoke-RestMethod -Uri $url -Method Get -Headers @{ "Authorization" = "Bearer $accessToken" }
 }
-function Get-Sites {
+function Get-DestinySite {
     param (
         [string]$accessToken,
         [string]$id,
@@ -48,27 +57,81 @@ function Get-Sites {
     $response = Invoke-RestMethod -Uri $url -Headers @{Authorization = "Bearer $accessToken"} -Method Get
     return $response
 }
-function Get-Fines {
+function Get-DestinyFine {
     param (
-        [string]$accessToken,
-        [string]$districtId,
-        [string]$patronBarcode,
-        [string]$siteId,
-        [string]$collectionType
+        [Parameter(Mandatory=$true)]
+        [string]$AccessToken,
+        [Parameter(Mandatory=$true)]
+        [string]$Domain,
+        [string]$Context,
+        [string]$PatronDistrictId,
+        [string]$PatronBarcode,
+        [string]$SiteId,
+        [string]$CollectionType
     )
-    $url = "$baseURL/fines"
-    $queryParams = @{}
-    if ($districtId) { $queryParams['districtId'] = $districtId }
-    if ($patronBarcode) { $queryParams['patronBarcode'] = $patronBarcode }
-    if ($siteId) { $queryParams['siteId'] = $siteId }
-    if ($collectionType) { $queryParams['collectionType'] = $collectionType }
-    $headers = @{
-        "Authorization" = "Bearer $accessToken"
+    $Url = "https://$Domain/api/v1/rest"
+    if ($Context) {
+        $Url += "/context/$Context"
     }
-    $response = Invoke-RestMethod -Uri $url -Method Get -Headers $headers -Query $queryParams
-    return $response
+    $Url += "/fines"
+    $QueryParam = ""
+    if ($PatronDistrictId) { 
+        $QueryParam += "&districtId=$PatronDistrictId"
+    }
+    if ($PatronBarcode) { 
+        $QueryParam += "&patronBarcode=$PatronBarcode"
+    }
+    if ($SiteId) { 
+        $QueryParam += "&siteId=$SiteId"
+    }
+    if ($CollectionType) { 
+        $QueryParam += "&collectionType=$CollectionType"
+    }
+    if ($QueryParam.Length -gt 0) {
+        $QueryParam = "?" + $QueryParam.Substring(1)
+        $Url += $QueryParam
+    }
+    $Header = @{
+        "Authorization" = "Bearer $AccessToken"
+    }
+    $Response = Invoke-RestMethod -Uri $Url -Method Get -Headers $Header
+    $Fine = @()
+    $Response | Foreach {
+        $SiteId = $_.site.internalId
+        $PatronId = $_.patron.internalId
+        $_.fines | Foreach {
+            $FineId = $_.internalId
+            $CollectionType = $_.collectionType
+            $Type = $_.type
+            $DateCreated = $_.dateCreated
+            $Description = $_.description
+            $Bib = $_.bib.internalId 
+            $Copy = $_.copy.internalId
+            $Fine += [PSCustomObject]@{
+                siteId = $SiteId
+                patronId = $PatronId
+                fineId = $FineId
+                collectionType = $CollectionType
+                type = $Type
+                dateCreated = $DateCreated
+                description = $Description
+                bibId = $Bib
+                copyId = $Copy
+                amountDue = $_.paymentSummary.amountDue
+                amount = $_.paymentSummary.amount
+                paid = $_.paymentSummary.paid
+                waived = $_.paymentSummary.waived
+                refundAmount = $_.paymentSummary.refundAmount
+                refundPaid = $_.paymentSummary.refundPaid
+                currencyUnit = $_.paymentSummary.currencyUnit
+                paymentReversed = $_.paymentSummary.paymentReversed
+                waiverReversed = $_.paymentSummary.waiverReversed
+            }
+        }
+    }
+    return $Fine
 }
-function Pay-Fines {
+Function New-DestinyPayment {
     param (
         [string]$accessToken,
         [array]$finePayments
