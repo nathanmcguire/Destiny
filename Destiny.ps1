@@ -23,21 +23,32 @@ Function Get-DestinyAccessToken {
     $Response.PSObject.Properties.Remove('expires_in')
     return $Response
 }
-function Get-DestinyPatron {
+Function Get-DestinyPatron {
     param (
-        [string]$accessToken,
-        [string]$id,
-        [string]$siteId = ""
+        [Parameter(Mandatory=$true)]
+        [string]$Domain,
+        [Parameter(Mandatory = $true)]
+        [string]$AccessToken,
+        [Parameter(Mandatory = $true)]
+        [string]$PatronId,
+        [string]$Context,
+        [string]$SiteId = ""
     )
-    if ($siteId -eq "") {
-        $url = "$baseURL/patrons/$id"
-    } else {
-        $url = "$baseURL/sites/$siteId/patrons/$id"
+    $Url = "https://$Domain/api/v1/rest"
+    if ($Context) {
+        $Url += "/context/$Context"
     }
-    Invoke-RestMethod -Uri $url -Method Get -Headers @{ "Authorization" = "Bearer $accessToken" }
+    if ($SiteId -eq "") {
+        $Url += "/patrons/$PatronId"
+    } else {
+        $Url += "/sites/$SiteId/patrons/$PatronId"
+    }
+    $response = Invoke-RestMethod -Uri $Url -Method Get -Headers @{ "Authorization" = "Bearer $AccessToken" }
+    return $response
 }
 function Get-DestinySite {
     param (
+        
         [string]$accessToken,
         [string]$id,
         [string[]]$productTypes
