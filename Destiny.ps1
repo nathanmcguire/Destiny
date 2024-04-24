@@ -18,10 +18,10 @@ Function Get-DestinyAccessToken {
         client_id = $ClientId
         client_secret = $ClientSecret
     }
-    $Response = Invoke-RestMethod -Uri $Url -Method Post -Body $Body
-    $Response.PSObject.Properties.Add([PSNoteProperty]::new('expires',(Get-Date).AddSeconds([int]$Response.expires_in - 10)))
-    $Response.PSObject.Properties.Remove('expires_in')
-    return $Response
+    $AccessToken = Invoke-RestMethod -Uri $Url -Method Post -Body $Body
+    $AccessToken.PSObject.Properties.Add([PSNoteProperty]::new('expires',(Get-Date).AddSeconds([int]$Response.expires_in - 10)))
+    $AccessToken.PSObject.Properties.Remove('expires_in')
+    return $AccessToken
 }
 Function Get-DestinyPatron {
     param (
@@ -43,8 +43,8 @@ Function Get-DestinyPatron {
     } else {
         $Url += "/sites/$SiteId/patrons/$PatronId"
     }
-    $response = Invoke-RestMethod -Uri $Url -Method Get -Headers @{ "Authorization" = "Bearer $AccessToken" }
-    return $response
+    $Patron = Invoke-RestMethod -Uri $Url -Method Get -Headers @{ "Authorization" = "Bearer $AccessToken" }
+    return $Patron
 }
 Function Get-DestinySite {
     param (
@@ -64,8 +64,7 @@ Function Get-DestinySite {
         Return Invoke-RestMethod -Uri $Url -Headers @{Authorization = "Bearer $AccessToken"} -Method Get
     } else {
         $Url += "/sites"
-        $Response = (Invoke-RestMethod -Uri $Url -Headers @{Authorization = "Bearer $AccessToken"} -Method Get).Value
-        Return $Response
+        Return (Invoke-RestMethod -Uri $Url -Headers @{Authorization = "Bearer $AccessToken"} -Method Get).Value
     }
 }
 function Get-DestinyFine {
@@ -147,14 +146,9 @@ Function New-DestinyPayment {
         [string]$accessToken,
         [array]$finePayments
     )
-    $url = "$baseURL/fines/payments"
-    $headers = @{
+    $Url = "$baseURL/fines/payments"
+    $Headers = @{
         "Authorization" = "Bearer $accessToken"
     }
-    $response = Invoke-RestMethod -Uri $url -Method Post -Headers $headers -Body ($finePayments | ConvertTo-Json)
-    return $response
+    Return Invoke-RestMethod -Uri $url -Method Post -Headers $headers -Body ($finePayments | ConvertTo-Json)
 }
-# Example usage:
-# $accessToken = "your_access_token_here"
-# Get-Fines -accessToken $accessToken -districtId "2020-789"
-# Pay-Fines -accessToken $accessToken -finePayments @(@{fineId=224; externalPaymentId='001-23438F'; payment=2.37})
