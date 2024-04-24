@@ -46,27 +46,27 @@ Function Get-DestinyPatron {
     $response = Invoke-RestMethod -Uri $Url -Method Get -Headers @{ "Authorization" = "Bearer $AccessToken" }
     return $response
 }
-function Get-DestinySite {
+Function Get-DestinySite {
     param (
-        
-        [string]$accessToken,
-        [string]$id,
-        [string[]]$productTypes
+        [Parameter(Mandatory=$true)]
+        [string]$Domain,
+        [Parameter(Mandatory=$true)]
+        [string]$AccessToken,
+        [string]$Context,
+        [string]$SiteId
     )
-    # If $id is provided, retrieve a specific site
-    if ($id) {
-        $url = "$baseUrl/sites/$id"
+    $Url = "https://$Domain/api/v1/rest"
+    if ($Context) {
+        $Url += "/context/$Context"
     }
-    # If $productTypes is provided, retrieve sites based on product types
-    elseif ($productTypes) {
-        $url = "$baseUrl/sites?productTypes=$($productTypes -join '&productTypes=')"
+    if ($SiteId) {
+        $Url += "/sites/$SiteId"
+        Return Invoke-RestMethod -Uri $Url -Headers @{Authorization = "Bearer $AccessToken"} -Method Get
+    } else {
+        $Url += "/sites"
+        $Response = (Invoke-RestMethod -Uri $Url -Headers @{Authorization = "Bearer $AccessToken"} -Method Get).Value
+        Return $Response
     }
-    # If neither $id nor $productTypes is provided, retrieve all sites
-    else {
-        $url = "$baseUrl/sites"
-    }
-    $response = Invoke-RestMethod -Uri $url -Headers @{Authorization = "Bearer $accessToken"} -Method Get
-    return $response
 }
 function Get-DestinyFine {
     param (
