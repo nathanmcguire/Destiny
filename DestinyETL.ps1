@@ -118,11 +118,6 @@ $DestinyFine | Foreach {
         Invoke-SqlCmd -ServerInstance $SQLServer -Database $SQLDatabase -Query $query -Verbose
     }
 }
-
-
-
-
-
 $Query = "SELECT DISTINCT patronId FROM Fine"
 $Patrons = Invoke-SqlCmd -ServerInstance $SQLServer -Database $SQLDatabase -Query $Query
 $Patrons | Foreach {
