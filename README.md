@@ -1,1 +1,1 @@
-# Follett Destiny API
+# Follet Destiny and Infinite Campus Sync
