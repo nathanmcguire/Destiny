@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0"?>
 <DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
-  DTS:ObjectName="SQL-4C26"
+  DTS:ObjectName="Integration"
   DTS:DTSID="{1CD60CD2-53D7-421F-9A11-1E6305204766}"
   DTS:CreationName="SMOServer">
   <DTS:ObjectData>

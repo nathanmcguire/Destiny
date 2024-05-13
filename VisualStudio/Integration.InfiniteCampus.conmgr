@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0"?>
 <DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
-  DTS:ObjectName="SQL-4C26.InfiniteCampus"
+  DTS:ObjectName="Integration.InfiniteCampus"
   DTS:DTSID="{8CD16746-3D3E-4549-976F-F65BDA9B4AF2}"
   DTS:CreationName="OLEDB">
   <DTS:ObjectData>

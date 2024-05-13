@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0"?>
 <DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
-  DTS:ObjectName="osageschoolsMO.infinitecampus.org,7771.schooloftheosage_mcguiren"
+  DTS:ObjectName="Campus"
   DTS:DTSID="{B49BD4B1-0121-40DD-A41D-0CD322B3DD2B}"
   DTS:CreationName="SMOServer">
   <DTS:ObjectData>
@@ -8,7 +8,7 @@
       ConnectionString="SqlServerName=osageschoolsMO.infinitecampus.org,7771;UseWindowsAuthentication=False;UserName=schooloftheosage_mcguiren;"
       ConnectByProxy="False">
       <PassWord
-        Sensitive="1" xmlns="www.microsoft.com/SqlServer/Dts">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA25wwI60HnUell7JzVK5I9AAAAAACAAAAAAADZgAAwAAAABAAAAD9GwLihw+S9/1tgKtDCabuAAAAAASAAACgAAAAEAAAAMk3lZ5rNW7+LILWNcKHIbNgAAAA0i0a7d6DvRXSJZpQgQc2rizZ5nmPBJvJ3DggRO9zS55mNMaY7oLWJ4yzg3R+Itt6zBMmDkCOrJkR9WAIPhhLqvZhPXwbLuzikg5aC41xr+AtkR+6142himvR9YqJ3FqwFAAAAHC4FSUlUxoOD+naCuEh1XZkfnhM</PassWord>
+        Sensitive="1" xmlns="www.microsoft.com/SqlServer/Dts">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA25wwI60HnUell7JzVK5I9AAAAAACAAAAAAADZgAAwAAAABAAAABQd9eXnU//UICEkHCIjfGbAAAAAASAAACgAAAAEAAAAAeeHskUDxfSZmPLl4bfg19gAAAAYncGQ101bOOJSKSp3VoIlQtRUC/Ixj+/ldTQR3YWGT/BXbTg+iTNecSoEtyU2J6c9mFbnc4Cx9Eiz8WlkSxhkXzY7SPjFc/mTG8Z6Htf/SIx3c9pvpWiuUW+dhLbTVCrFAAAANWWaT9SwxM+RerTw99pUH7IxDd1</PassWord>
     </SMOServerConnectionManager>
   </DTS:ObjectData>
 </DTS:ConnectionManager>

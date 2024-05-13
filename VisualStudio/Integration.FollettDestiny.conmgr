@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0"?>
 <DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
-  DTS:ObjectName="SQL-4C26.FollettDestiny"
+  DTS:ObjectName="Integration FollettDestiny"
   DTS:DTSID="{7D72D18F-C56F-4E05-820F-E9B1315994E2}"
   DTS:CreationName="OLEDB">
   <DTS:ObjectData>
