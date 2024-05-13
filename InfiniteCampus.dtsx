@@ -1,0 +1,98 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="4/8/2024 10:03:12 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="SQL-4C26"
+  DTS:CreatorName="SOTO\mcguiren-admin"
+  DTS:DTSID="{DDC92BA9-02D2-41E2-AF45-EDF6E73F1ABD}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="16.0.5397.1"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="InfiniteCampus"
+  DTS:PackageType="5"
+  DTS:VersionBuild="28"
+  DTS:VersionGUID="{0B43709E-8F9E-4594-A39E-BFFB1F9DFD29}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[osageschoolsMO.infinitecampus.org,7771.schooloftheosage_mcguiren]"
+      DTS:CreationName="SMOServer"
+      DTS:DTSID="{B49BD4B1-0121-40DD-A41D-0CD322B3DD2B}"
+      DTS:ObjectName="osageschoolsMO.infinitecampus.org,7771.schooloftheosage_mcguiren">
+      <DTS:ObjectData>
+        <SMOServerConnectionManager
+          ConnectionString="SqlServerName=osageschoolsMO.infinitecampus.org,7771;UseWindowsAuthentication=False;UserName=schooloftheosage_mcguiren;"
+          ConnectByProxy="False">
+          <PassWord
+            Sensitive="1" xmlns="www.microsoft.com/SqlServer/Dts"
+            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA25wwI60HnUell7JzVK5I9AAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAAAb8plFqkcfKY6Vup+8qLiRAAAAAASAAACgAAAAEAAAAMi0xYXsHzzGIkkfxfmx4dkwAAAAOKgHmHvGhZe9iNmxvgQhiftrVc4KIlTiHgu7I5t8tVISkVN1vg7IMsKtTeYfEU3BFAAAAEgX1MnGk3CKwkkBtxMvlu2nAB+K</PassWord>
+        </SMOServerConnectionManager>
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[SQL-4C26]"
+      DTS:CreationName="SMOServer"
+      DTS:DTSID="{1CD60CD2-53D7-421F-9A11-1E6305204766}"
+      DTS:ObjectName="SQL-4C26">
+      <DTS:ObjectData>
+        <SMOServerConnectionManager
+          ConnectionString="SqlServerName=SQL-4C26;UseWindowsAuthentication=True;UserName=;"
+          ConnectByProxy="False" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Initial Transfer"
+      DTS:CreationName="Microsoft.TransferSqlServerObjectsTask"
+      DTS:Description="Transfer SQL Server Objects Task"
+      DTS:DTSID="{9377747A-3C55-45D5-AA40-5320223B90D9}"
+      DTS:ExecutableType="Microsoft.TransferSqlServerObjectsTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Initial Transfer"
+      DTS:TaskContact="Transfer Objects Task; Microsoft Corporation; SQL Server 2022; (c) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <TransferSqlServerObjectsTaskData
+          SourceConnection="{B49BD4B1-0121-40DD-A41D-0CD322B3DD2B}"
+          DestinationConnection="{1CD60CD2-53D7-421F-9A11-1E6305204766}"
+          SourceDatabase="osage_school"
+          DestinationDatabase="InfiniteCampus"
+          TablesList="93,31,[dbo].[AccountAutomationDetail],32,[dbo].[AccountAutomationSummary],15,[dbo].[Address],16,[dbo].[Calendar],23,[dbo].[CampusAttribute],24,[dbo].[CampusDictionary],18,[dbo].[CampusTool],21,[dbo].[CampusVersion],15,[dbo].[Contact],29,[dbo].[ContentSecurityPolicy],35,[dbo].[ContentSecurityPolicyReport],14,[dbo].[Course],21,[dbo].[CourseCatalog],17,[dbo].[CourseFee],20,[dbo].[CourseMaster],29,[dbo].[CourseMasterAttribute],18,[dbo].[CoursePlan],20,[dbo].[CustomCourse],20,[dbo].[CustomSchool],21,[dbo].[CustomSection],21,[dbo].[CustomStudent],28,[dbo].[CustomTransportation],11,[dbo].[Day],16,[dbo].[DayEvent],16,[dbo].[District],18,[dbo].[Employment],28,[dbo].[EmploymentAssignment],36,[dbo].[EmploymentAssignmentLocation],38,[dbo].[EmploymentAssignmentSupervisor],28,[dbo].[EmploymentCredential],18,[dbo].[Enrollment],20,[dbo].[EnrollmentMO],11,[dbo].[Fee],21,[dbo].[FeeAdjustment],21,[dbo].[FeeAssignment],17,[dbo].[FeeCredit],25,[dbo].[FeeFinanceAccount],19,[dbo].[FeeMaximums],18,[dbo].[FeePayment],17,[dbo].[FeePosted],22,[dbo].[FeeTransaction],15,[dbo].[FeeVoid],20,[dbo].[FeeWizardLog],36,[dbo].[GradingTaskCalculationMaster],31,[dbo].[GradingTaskCreditMaster],17,[dbo].[Household],25,[dbo].[HouseholdLocation],23,[dbo].[HouseholdMember],16,[dbo].[Identity],29,[dbo].[LessonPlanGroupMaster],34,[dbo].[LessonPlanPreferenceMaster],13,[dbo].[Lunch],26,[dbo].[PaymentFundFeeType],14,[dbo].[Period],22,[dbo].[PeriodSchedule],14,[dbo].[Person],15,[dbo].[Pronoun],27,[dbo].[RecurringFeePayment],19,[dbo].[RelatedPair],24,[dbo].[RelationshipType],15,[dbo].[Request],26,[dbo].[ResponsiveSchedule],25,[dbo].[ResponsiveSession],12,[dbo].[Room],14,[dbo].[Roster],25,[dbo].[ScheduleStructure],23,[dbo].[SchedulingGroup],33,[dbo].[SchedulingGroupAssignment],22,[dbo].[SchedulingRule],14,[dbo].[School],22,[dbo].[SchoolBoundary],18,[dbo].[SchoolYear],15,[dbo].[Section],24,[dbo].[SectionPlacement],27,[dbo].[SectionStaffHistory],23,[dbo].[SectionTemplate],28,[dbo].[SectionTemplateGroup],32,[dbo].[SectionTemplatePlacement],27,[dbo].[SecurityPreferences],27,[dbo].[TeacherScoredMaster],12,[dbo].[Term],20,[dbo].[TermSchedule],13,[dbo].[Trial],19,[dbo].[UserAccount],17,[dbo].[UserGroup],23,[dbo].[UserGroupMember],33,[dbo].[UserGroupNavigationRights],33,[dbo].[UserGroupSchoolYearRights],27,[dbo].[UserGroupToolRights],28,[dbo].[UserNavigationRights],20,[dbo].[UserNavTools],28,[dbo].[UserSchoolYearRights],22,[dbo].[UserToolRights],"
+          DropObjectsFirst="True"
+          CopyData="True" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="148,42"
+          Id="Package\Initial Transfer"
+          TopLeft="59,49" />
+        <AnnotationLayout
+          Text="Core - Student&#xD;&#xA;Core - Staff&#xD;&#xA;Core - Census&#xD;&#xA;Calendar Structure&#xD;&#xA;Course Master&#xD;&#xA;Scheduling&#xD;&#xA;Business Admin - Fees&#xD;&#xA;User Security - Authorizaiton"
+          ParentId="Package"
+          FontInfo="{assembly:Null}"
+          Size="181,152"
+          Id="e448cf4f-80ca-4c46-bfa4-d46a1efaa2f2"
+          TopLeft="297,69" />
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>

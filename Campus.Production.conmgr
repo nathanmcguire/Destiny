@@ -1,0 +1,16 @@
+﻿<?xml version="1.0"?>
+<DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:ObjectName="osageschoolsMO.infinitecampus.org,7771.osage_school.schooloftheosage_mcguiren"
+  DTS:DTSID="{DFF38520-3F6C-4BA4-8DA4-D5C1567F174F}"
+  DTS:CreationName="OLEDB">
+  <DTS:ObjectData>
+    <DTS:ConnectionManager
+      DTS:ConnectRetryCount="1"
+      DTS:ConnectRetryInterval="5"
+      DTS:ConnectionString="Data Source=osageschoolsMO.infinitecampus.org,7771;User ID=schooloftheosage_mcguiren;Initial Catalog=osage_school;Provider=MSOLEDBSQL.1;Auto Translate=False;">
+      <DTS:Password
+        DTS:Name="Password"
+        Sensitive="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA25wwI60HnUell7JzVK5I9AAAAAACAAAAAAADZgAAwAAAABAAAAAfhYbVSGceSIPF37Jy3VU/AAAAAASAAACgAAAAEAAAACw5u3o+RwGzJjLYbSWhbcOAAAAAuQtkVBMQ31/XnNLvLX66OWA2yMSq7THoPO1FCk9j9ddSynq9kN7RHXHUmijFoXjVBEiocYnD1vrJn3KP1q3TGjMD9CiHURCxWq8ydpTELe3IHVQtr7hxHnW/nNMAA07SxMyXJnvWIwJYZxDS+mPlbeO/G8Y+mfiIXkNLQabOzXIUAAAAOOGxjpddOdzmd72oJ6i5EaLX+rU=</DTS:Password>
+    </DTS:ConnectionManager>
+  </DTS:ObjectData>
+</DTS:ConnectionManager>

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0"?>
+<DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:ObjectName="SQL-4C26.InfiniteCampus"
+  DTS:DTSID="{8CD16746-3D3E-4549-976F-F65BDA9B4AF2}"
+  DTS:CreationName="OLEDB">
+  <DTS:ObjectData>
+    <DTS:ConnectionManager
+      DTS:ConnectRetryCount="1"
+      DTS:ConnectRetryInterval="5"
+      DTS:ConnectionString="Data Source=SQL-4C26;Initial Catalog=InfiniteCampus;Provider=SQLNCLI11.1;Integrated Security=SSPI;Application Name=SSIS-Package1-{8CD16746-3D3E-4549-976F-F65BDA9B4AF2}SQL-4C26.InfiniteCampus;Auto Translate=False;" />
+  </DTS:ObjectData>
+</DTS:ConnectionManager>
